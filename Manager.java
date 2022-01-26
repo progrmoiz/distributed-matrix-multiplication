@@ -33,8 +33,10 @@ public class Manager {
   public static void main(String[] args) {
     try {
       ServerSocket ss = new ServerSocket(6666, 100);
+      log("Server started");
 
       Socket mainClientSocket = ss.accept();
+      log("Connected to " + mainClientSocket.getInetAddress() + ":" + mainClientSocket.getPort());
 
       // Accept Object from client
       ObjectInputStream ois = new ObjectInputStream(mainClientSocket.getInputStream());
@@ -83,13 +85,9 @@ public class Manager {
 
         // Wait for the client to send back the result
         ObjectInputStream ois2 = new ObjectInputStream(clientSocket.getInputStream());
-        System.out.println("Running this line 1");
         Integer[] result = (Integer[]) ois2.readObject();
-        System.out.println("Running this line 2");
         System.out.println("result= " + Arrays.toString(result));
         // ois2.close();
-
-        System.out.println("Running this line");
 
         clientSocket.close();
       }
