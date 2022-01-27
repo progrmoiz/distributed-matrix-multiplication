@@ -6,6 +6,10 @@ import java.net.Socket;
 import java.util.Arrays;
 
 public class WorkerClient {
+  private Socket clientSocket;
+  private ObjectOutputStream outputStream;
+  private ObjectInputStream inputStream;
+
   // Computation function for the worker
   // Add n to each element of the array
   public static Integer[] compute(Integer[] ints, int n) {
@@ -14,10 +18,6 @@ public class WorkerClient {
     }
     return ints;
   }
-
-  private Socket clientSocket;
-  private ObjectOutputStream outputStream;
-  private ObjectInputStream inputStream;
 
   public void startConnection(Socket clientSocket) {
     try {
@@ -82,8 +82,8 @@ public class WorkerClient {
 
   public void stopConnection() {
     try {
-      outputStream.close();
       inputStream.close();
+      outputStream.close();
       clientSocket.close();
     } catch (IOException e) {
       System.out.println("Closing connection failed");
