@@ -1,10 +1,29 @@
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+
+// servers
+// localhost:8080
+// localhost:8081
+
+// chunks
+// Job 1 [0, 1, 2, 3, 4]
+// Job 2 [5, 6, 7, 8, 9]
+// Job 3 [10, 11, 12, 13, 14]
+// Job 4 [15, 16, 17, 18, 19]
+
+// Create jobs from chunks (jobs = chunks)
+
+// Enqueue all jobs
+// Get list of all free server for example if two are free then send job to both (dequeue and execute)
 
 // Private attribute host and port
 public class Manager {
@@ -16,6 +35,27 @@ public class Manager {
       new InetSocketAddress("localhost", 1234),
       new InetSocketAddress("localhost", 5678),
   };
+
+  // Key value pair of busy INetSocketAddress and busy boolean
+  // Example: {new InetSocketAddress("localhost", 1234), false}
+  private static Map<String, Boolean> busyServers = new HashMap<>();
+
+  // Get all servers
+  private static String[] getAllServers() {
+    return Arrays.stream(serverAddresses)
+        .map((InetSocketAddress serverAddress) -> serverAddress.getHostName() + ":" + serverAddress.getPort())
+        .toArray(String[]::new);
+  }
+
+  // Get all busy servers
+
+  // Get all free servers
+  private static InetSocketAddress[] getFreeServers() {
+    // serverAddresses - busyServers
+    return new ArrayList<>(Arrays.asList(serverAddresses)).stream()
+        .filter(server -> !busyServers.containsKey(server.toString()))
+        .toArray(InetSocketAddress[]::new);
+  }
 
   // Logger function
   public static void log(String msg) {
@@ -57,8 +97,32 @@ public class Manager {
     return merged;
   }
 
+  // Create a custom task function
+  public static Integer[] task(Socket clientSocket, Integer[] chunk) throws IOException, ClassNotFoundException {
+    // Write the chunk to the socket
+    ObjectOutputStream oos2 = new ObjectOutputStream(clientSocket.getOutputStream());
+    oos2.writeObject(chunk);
+    oos2.flush();
+
+    // Read the result from the socket
+    ObjectInputStream ois2 = new ObjectInputStream(clientSocket.getInputStream());
+    Integer[] result = (Integer[]) ois2.readObject();
+    System.out.println("result= " + Arrays.toString(result));
+
+    ois2.close();
+    oos2.close();
+    clientSocket.close();
+
+    // Print the server toString
+    System.out.println("Server: " + clientSocket.getInetAddress().toString());
+
+    return result;
+  }
+
   public static void main(String[] args) {
     try {
+      System.out.println("All servers: " + Arrays.toString(getAllServers()));
+
       ServerSocket ss = new ServerSocket(6666, 100);
       log("Server started");
 
@@ -86,21 +150,15 @@ public class Manager {
         log("Sending chunk " + i + " to worker " + i);
 
         Socket clientSocket = new Socket(serverAddresses[i].getHostName(), serverAddresses[i].getPort());
-        ObjectOutputStream oos2 = new ObjectOutputStream(clientSocket.getOutputStream());
-        oos2.writeObject(chunks[i]);
-        oos2.flush();
+        // Add this server to busy servers list
+        // busyServers.put(serverAddresses[i], true);
+        System.out.println("busyServers= " + serverAddresses[i].toString());
 
-        // Wait for the client to send back the result
-        ObjectInputStream ois2 = new ObjectInputStream(clientSocket.getInputStream());
-        Integer[] result = (Integer[]) ois2.readObject();
-        System.out.println("result= " + Arrays.toString(result));
+        log("Connected to " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
 
-        // Update the chunks
-        chunks[i] = result;
+        task(clientSocket, chunks[i]);
 
-        ois2.close();
-        oos2.close();
-        clientSocket.close();
+        System.out.println("Reachable: " + clientSocket.getInetAddress().isReachable(1000));
       }
 
       // Merge the results from the workers
