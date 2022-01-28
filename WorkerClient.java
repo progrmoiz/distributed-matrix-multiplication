@@ -106,7 +106,7 @@ public class WorkerClient {
   public static void main(String[] args) {
     // Socket socket;
 
-    // // Ping the server localhost 6666 to keep the connection alive
+    // Ping the server localhost 6666 to keep the connection alive
     // while((socket = pingServer("localhost", 6666, 1000)) == null) {
     //   System.out.println("Server not reachable, retrying in 1 second");
     //   try {
