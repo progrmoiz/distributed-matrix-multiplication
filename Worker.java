@@ -62,12 +62,13 @@ public class Worker {
         ints[i] += n;
       }
       // wait for a second
-      try {
-        System.out.println("computing");
-        Thread.sleep(10000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+      // try {
+      //   System.out.println("computing");
+      //   Thread.sleep(10000);
+      // } catch (InterruptedException e) {
+      //   e.printStackTrace();
+      // }
+      System.out.println("computing");
       return ints;
     }
 
