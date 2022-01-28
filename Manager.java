@@ -34,7 +34,7 @@ public class Manager {
   // Example: "localhost", 1234
   private final static InetSocketAddress[] SERVER_ADDRESSES = {
       new InetSocketAddress("localhost", 1234),
-      new InetSocketAddress("192.168.1.105", 1234),
+      new InetSocketAddress("localhost", 5678),
   };
 
   // Key value pair of busy INetSocketAddress and busy boolean
@@ -43,6 +43,11 @@ public class Manager {
 
   // Get all free servers
   private static InetSocketAddress[] getFreeServers() {
+    // Return empty array if no servers are free
+    if (serverStatus.isEmpty()) {
+      return new InetSocketAddress[0];
+    }
+
     return Arrays.stream(SERVER_ADDRESSES)
         .filter((InetSocketAddress serverAddress) -> !serverStatus.get(inetSocketAddressToString(serverAddress)))
         .toArray(InetSocketAddress[]::new);
@@ -163,24 +168,24 @@ public class Manager {
         int chunkIndex = 0;
 
         while (true) { // 4 chunks
-          InetSocketAddress[] serverAddresses = {};
+          InetSocketAddress[] serverAddresses = getFreeServers();
 
-          try {
-            serverAddresses = getFreeServers(); // 0 servers
-          } catch (Exception e) {
-            System.out.println("No servers available");
-            Thread.sleep(1000);
-            continue;
-          }
+          // try {
+          // serverAddresses = getFreeServers(); // 0 servers
+          // } catch (Exception e) {
+          // System.out.println("No servers available");
+          // Thread.sleep(1000);
+          // continue;
+          // }
 
           // log the servers
           log("Free servers: " + Arrays.toString(serverAddresses));
 
-          // if (serverAddresses.length == 0) {
-          //   log("No free servers at the moment. Waiting for free servers...");
-          //   Thread.sleep(1000);
-          //   continue;
-          // }
+          if (serverAddresses.length == 0) {
+            log("No free servers at the moment. Waiting for free servers...");
+            Thread.sleep(1000);
+            continue;
+          }
 
           // log free servers
           log("Free servers: " + Arrays.toString(serverAddresses));
