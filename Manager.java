@@ -34,7 +34,7 @@ public class Manager {
   // Example: "localhost", 1234
   private final static InetSocketAddress[] SERVER_ADDRESSES = {
       new InetSocketAddress("localhost", 1234),
-      new InetSocketAddress("localhost", 5678),
+      new InetSocketAddress("192.168.1.105", 1234),
   };
 
   // Key value pair of busy INetSocketAddress and busy boolean
@@ -44,8 +44,13 @@ public class Manager {
   // Get all free servers
   private static InetSocketAddress[] getFreeServers() {
     return Arrays.stream(SERVER_ADDRESSES)
-        .filter((InetSocketAddress serverAddress) -> !serverStatus.get(serverAddress.toString()))
+        .filter((InetSocketAddress serverAddress) -> !serverStatus.get(inetSocketAddressToString(serverAddress)))
         .toArray(InetSocketAddress[]::new);
+  }
+
+  // Inet socket address to string
+  private static String inetSocketAddressToString(InetSocketAddress inetSocketAddress) {
+    return inetSocketAddress.getHostString() + ":" + inetSocketAddress.getPort();
   }
 
   // Logger function
@@ -113,7 +118,7 @@ public class Manager {
   public static void main(String[] args) {
     // Add all servers to serverStatus with false
     for (InetSocketAddress serverAddress : SERVER_ADDRESSES) {
-      serverStatus.put(serverAddress.toString(), false);
+      serverStatus.put(inetSocketAddressToString(serverAddress), false);
     }
 
     try {
@@ -133,7 +138,8 @@ public class Manager {
       System.out.println("ints= " + Arrays.toString(ints));
 
       // Divide the integers array into chunks of size n
-      int chunkSize = ints.length / 2;
+      int partitions = 4;
+      int chunkSize = ints.length / partitions;
       Integer[][] chunks = divide(ints, chunkSize);
 
       // Create a copy of the chunks
@@ -157,14 +163,27 @@ public class Manager {
         int chunkIndex = 0;
 
         while (true) { // 4 chunks
-          InetSocketAddress[] serverAddresses = getFreeServers(); // 0 servers
+          InetSocketAddress[] serverAddresses = {};
 
-          if (serverAddresses.length == 0) {
-            log("No free servers at the moment. Waiting for free servers...");
+          try {
+            serverAddresses = getFreeServers(); // 0 servers
+          } catch (Exception e) {
+            System.out.println("No servers available");
             Thread.sleep(1000);
             continue;
           }
 
+          // log the servers
+          log("Free servers: " + Arrays.toString(serverAddresses));
+
+          // if (serverAddresses.length == 0) {
+          //   log("No free servers at the moment. Waiting for free servers...");
+          //   Thread.sleep(1000);
+          //   continue;
+          // }
+
+          // log free servers
+          log("Free servers: " + Arrays.toString(serverAddresses));
 
           // Iterate over the free servers
           for (InetSocketAddress serverAddress : serverAddresses) { // 1st server
@@ -173,7 +192,7 @@ public class Manager {
             final int chunkIndexFinal = chunkIndex;
 
             // Set the server status to busy
-            serverStatus.put(serverAddress.toString(), true);
+            serverStatus.put(inetSocketAddressToString(serverAddress), true);
 
             Thread thread = new Thread(() -> {
               try {
@@ -194,7 +213,10 @@ public class Manager {
                 clientSocket.close();
 
                 // Free the server
-                serverStatus.put(serverAddress.toString(), false);
+                log("Freeing server: " + serverAddress.toString());
+                serverStatus.put(inetSocketAddressToString(serverAddress), false);
+                // Print hashmap serverStatus
+                log("serverStatus: " + serverStatus.toString());
               } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
               }

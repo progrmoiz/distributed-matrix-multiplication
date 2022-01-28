@@ -70,7 +70,12 @@ public class MainClient {
 
   public static void main(String[] args) {
     // integer collection
-    Integer[] ints = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    Integer[] ints = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+    // Create an integer array of 1 million elements and fill it with random numbers
+    // Integer[] ints = new Integer[1000000];
+    // for (int i = 0; i < ints.length; i++) {
+      // ints[i] = (int) (Math.random() * 100);
+    // }
 
     MainClient mainClient = new MainClient();
     mainClient.startConnection("localhost", 6666);
