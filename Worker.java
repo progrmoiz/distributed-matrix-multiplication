@@ -61,6 +61,13 @@ public class Worker {
       for (int i = 0; i < ints.length; i++) {
         ints[i] += n;
       }
+      // wait for a second
+      try {
+        System.out.println("computing");
+        Thread.sleep(10000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
       return ints;
     }
 

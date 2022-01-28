@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -31,29 +32,19 @@ public class Manager {
   // List of InetSocketAddress
   // Host address is string and port number is integer
   // Example: "localhost", 1234
-  private static InetSocketAddress[] serverAddresses = {
+  private final static InetSocketAddress[] SERVER_ADDRESSES = {
       new InetSocketAddress("localhost", 1234),
       new InetSocketAddress("localhost", 5678),
   };
 
   // Key value pair of busy INetSocketAddress and busy boolean
   // Example: {new InetSocketAddress("localhost", 1234), false}
-  private static Map<String, Boolean> busyServers = new HashMap<>();
-
-  // Get all servers
-  private static String[] getAllServers() {
-    return Arrays.stream(serverAddresses)
-        .map((InetSocketAddress serverAddress) -> serverAddress.getHostName() + ":" + serverAddress.getPort())
-        .toArray(String[]::new);
-  }
-
-  // Get all busy servers
+  private static Map<String, Boolean> serverStatus = new HashMap<>();
 
   // Get all free servers
   private static InetSocketAddress[] getFreeServers() {
-    // serverAddresses - busyServers
-    return new ArrayList<>(Arrays.asList(serverAddresses)).stream()
-        .filter(server -> !busyServers.containsKey(server.toString()))
+    return Arrays.stream(SERVER_ADDRESSES)
+        .filter((InetSocketAddress serverAddress) -> !serverStatus.get(serverAddress.toString()))
         .toArray(InetSocketAddress[]::new);
   }
 
@@ -120,8 +111,13 @@ public class Manager {
   }
 
   public static void main(String[] args) {
+    // Add all servers to serverStatus with false
+    for (InetSocketAddress serverAddress : SERVER_ADDRESSES) {
+      serverStatus.put(serverAddress.toString(), false);
+    }
+
     try {
-      System.out.println("All servers: " + Arrays.toString(getAllServers()));
+      System.out.println("FrRE servers: " + Arrays.toString(getFreeServers()));
 
       ServerSocket ss = new ServerSocket(6666, 100);
       log("Server started");
@@ -140,30 +136,102 @@ public class Manager {
       int chunkSize = ints.length / 2;
       Integer[][] chunks = divide(ints, chunkSize);
 
+      // Create a copy of the chunks
+      Integer[][] resultChunks = new Integer[chunks.length][chunks[0].length];
+
       // Print the chunks
       for (Integer[] chunk : chunks) {
         System.out.println("chunk= " + Arrays.toString(chunk));
       }
 
-      // Send the chunks to the server clients
-      for (int i = 0; i < chunks.length; i++) {
-        log("Sending chunk " + i + " to worker " + i);
+      List<Thread> threads = new ArrayList<>();
+      // send the chunks to servers clients
 
-        Socket clientSocket = new Socket(serverAddresses[i].getHostName(), serverAddresses[i].getPort());
-        // Add this server to busy servers list
-        // busyServers.put(serverAddresses[i], true);
-        System.out.println("busyServers= " + serverAddresses[i].toString());
+      // Iterate over the chunks (4 chunks)
+      // Get the free servers (2 free servers)
+      // Create a new thread for each chunk depending on the free servers
+      // - 2 chunks will be sent to 2 servers
 
-        log("Connected to " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
+      // send the chunks to servers clients in threads
+      try {
+        int chunkIndex = 0;
 
-        task(clientSocket, chunks[i]);
+        while (true) { // 4 chunks
+          InetSocketAddress[] serverAddresses = getFreeServers(); // 0 servers
 
-        System.out.println("Reachable: " + clientSocket.getInetAddress().isReachable(1000));
+          if (serverAddresses.length == 0) {
+            log("No free servers at the moment. Waiting for free servers...");
+            Thread.sleep(1000);
+            continue;
+          }
+
+
+          // Iterate over the free servers
+          for (InetSocketAddress serverAddress : serverAddresses) { // 1st server
+            // Fix: Local variable chunkIndex defined in an enclosing scope must be final or
+            // effectively final
+            final int chunkIndexFinal = chunkIndex;
+
+            // Set the server status to busy
+            serverStatus.put(serverAddress.toString(), true);
+
+            Thread thread = new Thread(() -> {
+              try {
+                // Create a new socket
+                Socket clientSocket = new Socket(serverAddress.getHostName(), serverAddress.getPort());
+                log("Connected to " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
+
+                // Send the chunk to the server
+                Integer[] result = task(clientSocket, chunks[chunkIndexFinal]);
+
+                // Merge the result chunks
+                resultChunks[chunkIndexFinal] = result;
+
+                // Print the result
+                System.out.println("result= " + Arrays.toString(result));
+
+                // Close the socket
+                clientSocket.close();
+
+                // Free the server
+                serverStatus.put(serverAddress.toString(), false);
+              } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+              }
+            });
+            chunkIndex++; // 4th chunk
+
+            threads.add(thread);
+            thread.start();
+          }
+
+          if (chunkIndex == chunks.length) {
+            break;
+          }
+
+        }
+
+      } catch (Exception e) {
+        e.printStackTrace();
       }
+
+      // join all the threads
+      try {
+        for (Thread thread : threads) {
+          thread.join();
+        }
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+
+      System.out.println("FREE servers: " + Arrays.toString(getFreeServers()));
+
+      // log running this after joining the threads
+      log("Running this after joining the threads");
 
       // Merge the results from the workers
       System.out.println("Merging results");
-      Integer[] merged = merge(chunks);
+      Integer[] merged = merge(resultChunks);
       System.out.println("merged= " + Arrays.toString(merged));
 
       // Send the merged result to the client
