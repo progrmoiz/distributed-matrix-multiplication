@@ -334,10 +334,10 @@ public class Manager {
   }
 
   public static void main(String[] args) {
-    Manager manager = new Manager(1);
+    Manager manager = new Manager(2);
     manager.addWorker(new InetSocketAddress("localhost", 9001));
     manager.addWorker(new InetSocketAddress("localhost", 9002));
-    manager.addWorker(new InetSocketAddress("localhost", 9003));
+    // manager.addWorker(new InetSocketAddress("localhost", 9003));
     manager.start(6666);
   }
 }
