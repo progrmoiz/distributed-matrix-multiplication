@@ -118,6 +118,48 @@ final public class Matrix {
     return true;
   }
 
+  public Matrix quarterify(int index) {
+    // Divide the matrix into 4 quarters
+    Matrix quarter = new Matrix(M / 2, N / 2);
+
+    switch (index) {
+      case 1:
+        // Quarter 1
+        for (int i = 0; i < M / 2; i++) {
+          for (int j = 0; j < N / 2; j++) {
+            quarter.data[i][j] = data[i][j];
+          }
+        }
+        break;
+      case 2:
+        // Quarter 2
+        for (int i = 0; i < M / 2; i++) {
+          for (int j = N / 2; j < N; j++) {
+            quarter.data[i][j] = data[i][j];
+          }
+        }
+        break;
+      case 3:
+        // Quarter 3
+        for (int i = M / 2; i < M; i++) {
+          for (int j = 0; j < N / 2; j++) {
+            quarter.data[i][j] = data[i][j];
+          }
+        }
+        break;
+      case 4:
+        // Quarter 4
+        for (int i = M / 2; i < M; i++) {
+          for (int j = N / 2; j < N; j++) {
+            quarter.data[i][j] = data[i][j];
+          }
+        }
+        break;
+    }
+    
+    return quarter;
+  }
+
   // return C = A * B
   public Matrix times(Matrix B) {
     Matrix A = this;
