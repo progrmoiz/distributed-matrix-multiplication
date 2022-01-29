@@ -226,15 +226,22 @@ public class Manager {
           while (true) { // 4 chunks
             InetSocketAddress[] workerAddresses = getFreeWorkers();
 
+            // log all free servers
+            LOGGER.info("Free servers: " + Arrays.toString(workerAddresses));
+
             if (workerAddresses.length == 0) {
               LOGGER.info("No free servers at the moment. Waiting for free servers...");
               Thread.sleep(1000);
               continue;
             }
 
-            // If chunks < servers, make workers equal to chunks
-            if (workerAddresses.length > chunks.length) {
-              workerAddresses = Arrays.copyOfRange(workerAddresses, 0, chunks.length);
+            // calculate the remaining chunks
+            int remainingChunks = chunks.length - chunkIndex;
+
+            // If remaining chunks is less than the number of free servers,
+            // assign the remaining chunks to the free servers
+            if (workerAddresses.length > remainingChunks) {
+              workerAddresses = Arrays.copyOfRange(workerAddresses, 0, remainingChunks);
             }
 
             // Iterate over the free servers
@@ -248,6 +255,9 @@ public class Manager {
 
               Thread thread = new Thread(() -> {
                 try {
+                  // Log chunk index
+                  LOGGER.info("Sending chunk " + chunkIndexFinal + " to worker " + Helper.inetSocketAddressToString(workerAddress));
+
                   // Create a new socket
                   Socket workerClientSocket = new Socket(workerAddress.getHostName(), workerAddress.getPort());
                   LOGGER.info("Connected to " + Helper.inetSocketAddressToString(workerAddress));
@@ -274,12 +284,13 @@ public class Manager {
                   e.printStackTrace();
                 }
               });
-              chunkIndex++; // 4th chunk
-
               threads.add(thread);
               thread.start();
-            }
 
+              chunkIndex++; // 4th chunk
+
+            }
+ 
             if (chunkIndex == chunks.length) {
               break;
             }
@@ -323,7 +334,7 @@ public class Manager {
   }
 
   public static void main(String[] args) {
-    Manager manager = new Manager();
+    Manager manager = new Manager(1);
     manager.addWorker(new InetSocketAddress("localhost", 9001));
     manager.addWorker(new InetSocketAddress("localhost", 9002));
     manager.addWorker(new InetSocketAddress("localhost", 9003));

@@ -12,7 +12,7 @@ public class Worker {
 
   // Logger for this class
   private static final Logger LOGGER = Logger.getLogger(Worker.class.getName());
-
+  
   /**
    * Start a server socket and wait for a connection.
    *
@@ -47,7 +47,7 @@ public class Worker {
       LOGGER.info("Closing connection failed");
       e.printStackTrace();
     } catch (Exception e) {
-      LOGGER.info(e);
+      LOGGER.info(e.getMessage());
       e.printStackTrace();
     }
   }
