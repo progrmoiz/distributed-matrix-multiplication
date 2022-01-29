@@ -28,34 +28,84 @@ import java.util.logging.Logger;
 
 // Private attribute host and port
 public class Manager {
+  // Server socket for accepting client connections
+  private ServerSocket serverSocket;
+
+  // Logger for this class
+  private static final Logger LOGGER = Logger.getLogger(Manager.class.getName());
 
   // List of InetSocketAddress
   // Host address is string and port number is integer
   // Example: "localhost", 1234
-  private final static InetSocketAddress[] SERVER_ADDRESSES = {
-      new InetSocketAddress("localhost", 1234),
-      new InetSocketAddress("192.168.1.105", 1234),
-  };
+  private InetSocketAddress[] workerAddresses = {};
 
   // Key value pair of busy INetSocketAddress and busy boolean
   // Example: {new InetSocketAddress("localhost", 1234), false}
-  private static Map<String, Boolean> serverStatus = new HashMap<>();
+  private static Map<String, Boolean> workerStatus = new HashMap<>();
 
-  // Get all free servers
-  private static InetSocketAddress[] getFreeServers() {
-    return Arrays.stream(SERVER_ADDRESSES)
-        .filter((InetSocketAddress serverAddress) -> !serverStatus.get(inetSocketAddressToString(serverAddress)))
-        .toArray(InetSocketAddress[]::new);
+  private int partitionSize;
+
+  // Add to workerAddresses
+  public void addWorker(InetSocketAddress workerAddress) {
+    workerAddresses = Arrays.copyOf(workerAddresses, workerAddresses.length + 1);
+    workerAddresses[workerAddresses.length - 1] = workerAddress;
   }
 
-  // Inet socket address to string
-  private static String inetSocketAddressToString(InetSocketAddress inetSocketAddress) {
-    return inetSocketAddress.getHostString() + ":" + inetSocketAddress.getPort();
+  // Manager constructor
+  public Manager(int partitionSize) {
+    this.partitionSize = partitionSize;
   }
 
-  // Logger function
-  public static void log(String msg) {
-    Logger.getLogger("Manager").info(msg);
+  public Manager() {
+    this.partitionSize = 2;
+  }
+
+  /**
+   * Start a server socket and wait for a connection.
+   *
+   * @param port the port number to listen on
+   */
+  public void start(int port) {
+    try {
+      // Check if workerAddresses is empty, terminate immediately
+      if (workerAddresses.length == 0) {
+        LOGGER.info("No worker available");
+        return;
+      }
+
+      for (InetSocketAddress workerAddress : workerAddresses) {
+        workerStatus.put(Helper.inetSocketAddressToString(workerAddress), false);
+      }
+
+      // Create a server socket
+      serverSocket = new ServerSocket(port);
+      // Print the IP address and port number
+      LOGGER.info("Server started on " + serverSocket.getInetAddress() + ":" + serverSocket.getLocalPort());
+
+      // Print listening message
+      LOGGER.info("Listening for connections...");
+
+      // Wait for a client to connect
+      while (true) {
+        // Accept client connection and create a new thread for it
+        new ManagerClientHandler(serverSocket.accept()).start();
+      }
+
+    } catch (IOException e) {
+      LOGGER.info("Connection failed");
+      e.printStackTrace();
+    }
+  }
+
+  public void stop() {
+    try {
+      serverSocket.close();
+    } catch (IOException e) {
+      LOGGER.info("Closing connection failed");
+      e.printStackTrace();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   // Divide integer array into chunks of size n
@@ -68,13 +118,6 @@ public class Manager {
       }
     }
     return chunks;
-  }
-
-  public static Integer[] compute(Integer[] ints, int n) {
-    for (int i = 0; i < ints.length; i++) {
-      ints[i] += n;
-    }
-    return ints;
   }
 
   // Merge all the integer arrays into one
@@ -93,179 +136,208 @@ public class Manager {
     return merged;
   }
 
-  // Create a custom task function
-  public static Integer[] task(Socket clientSocket, Integer[] chunk) throws IOException, ClassNotFoundException {
+  /**
+   * This is our manager job handler.
+   * 1. Send a input to the worker
+   * 2. Let the worker handle the job
+   * 3. Receive a output from the worker
+   *
+   * @param Socket    clientSocket - The socket to the worker
+   * @param Integer[] chunk - The data to send to the worker
+   *
+   * @return Integer[] - The data received from the worker
+   */
+  public static Integer[] job(Socket clientSocket, Integer[] chunk) throws IOException, ClassNotFoundException {
     // Write the chunk to the socket
     ObjectOutputStream oos2 = new ObjectOutputStream(clientSocket.getOutputStream());
     oos2.writeObject(chunk);
     oos2.flush();
+    LOGGER.info("Sent chunk to worker, chunk: " + Arrays.toString(chunk));
 
     // Read the result from the socket
     ObjectInputStream ois2 = new ObjectInputStream(clientSocket.getInputStream());
     Integer[] result = (Integer[]) ois2.readObject();
-    System.out.println("result= " + Arrays.toString(result));
+    LOGGER.info("Received result: " + Arrays.toString(result));
 
+    // Close the socket
     ois2.close();
     oos2.close();
     clientSocket.close();
 
-    // Print the server toString
-    System.out.println("Server: " + clientSocket.getInetAddress().toString());
-
     return result;
   }
 
+  // Get all free servers
+  private InetSocketAddress[] getFreeWorkers() {
+    // Return empty array if no servers are free
+    if (workerStatus.isEmpty()) {
+      return new InetSocketAddress[0];
+    }
+
+    return Arrays.stream(workerAddresses)
+        .filter((InetSocketAddress workerAddress) -> !workerStatus.get(Helper.inetSocketAddressToString(workerAddress)))
+        .toArray(InetSocketAddress[]::new);
+  }
+
+  private class ManagerClientHandler extends Thread {
+    private Socket clientSocket;
+    private ObjectOutputStream outputStream;
+    private ObjectInputStream inputStream;
+
+    public ManagerClientHandler(Socket clientSocket) {
+      this.clientSocket = clientSocket;
+    }
+
+    public void run() {
+      try {
+        outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+        inputStream = new ObjectInputStream(clientSocket.getInputStream());
+
+        Integer[] data = (Integer[]) inputStream.readObject();
+        LOGGER.info("Received data: " + Arrays.toString(data));
+
+        // Integer[] result = compute(data, 1);
+        // LOGGER.info("Computed data: " + Arrays.toString(result));
+
+        // Divide the integers array into chunks of size n
+        int chunkSize = data.length / partitionSize;
+        Integer[][] chunks = divide(data, chunkSize);
+
+        // Create a copy of the chunks
+        Integer[][] resultChunks = new Integer[chunks.length][chunks[0].length];
+
+        // Print the chunks
+        for (Integer[] chunk : chunks) {
+          System.out.println("chunk= " + Arrays.toString(chunk));
+        }
+
+        List<Thread> threads = new ArrayList<>();
+        // send the chunks to servers clients
+
+        // Iterate over the chunks (4 chunks)
+        // Get the free servers (2 free servers)
+        // Create a new thread for each chunk depending on the free servers
+        // - 2 chunks will be sent to 2 servers
+
+        // send the chunks to servers clients in threads
+        try {
+          int chunkIndex = 0;
+
+          while (true) { // 4 chunks
+            InetSocketAddress[] workerAddresses = getFreeWorkers();
+
+            // log all free servers
+            LOGGER.info("Free servers: " + Arrays.toString(workerAddresses));
+
+            if (workerAddresses.length == 0) {
+              LOGGER.info("No free servers at the moment. Waiting for free servers...");
+              Thread.sleep(1000);
+              continue;
+            }
+
+            // calculate the remaining chunks
+            int remainingChunks = chunks.length - chunkIndex;
+
+            // If remaining chunks is less than the number of free servers,
+            // assign the remaining chunks to the free servers
+            if (workerAddresses.length > remainingChunks) {
+              workerAddresses = Arrays.copyOfRange(workerAddresses, 0, remainingChunks);
+            }
+
+            // Iterate over the free servers
+            for (InetSocketAddress workerAddress : workerAddresses) { // 1st server
+              // Fix: Local variable chunkIndex defined in an enclosing scope must be final or
+              // effectively final
+              final int chunkIndexFinal = chunkIndex;
+
+              // Set the server status to busy
+              workerStatus.put(Helper.inetSocketAddressToString(workerAddress), true);
+
+              Thread thread = new Thread(() -> {
+                try {
+                  // Log chunk index
+                  LOGGER.info("Sending chunk " + chunkIndexFinal + " to worker " + Helper.inetSocketAddressToString(workerAddress));
+
+                  // Create a new socket
+                  Socket workerClientSocket = new Socket(workerAddress.getHostName(), workerAddress.getPort());
+                  LOGGER.info("Connected to " + Helper.inetSocketAddressToString(workerAddress));
+
+                  // Send the chunk to the server
+                  Integer[] result = job(workerClientSocket, chunks[chunkIndexFinal]);
+
+                  // Merge the result chunks
+                  resultChunks[chunkIndexFinal] = result;
+
+                  // Print the result
+                  LOGGER.info("Result we got from worker: " + Arrays.toString(result));
+
+                  // Close the socket
+                  workerClientSocket.close();
+
+                  // Free the server
+                  LOGGER.info("Freeing worker: " + Helper.inetSocketAddressToString(workerAddress));
+                  workerStatus.put(Helper.inetSocketAddressToString(workerAddress), false);
+
+                  // Print hashmap workerStatus
+                  // LOGGER.info("workerStatus: " + workerStatus.toString());
+                } catch (IOException | ClassNotFoundException e) {
+                  e.printStackTrace();
+                }
+              });
+              threads.add(thread);
+              thread.start();
+
+              chunkIndex++; // 4th chunk
+
+            }
+ 
+            if (chunkIndex == chunks.length) {
+              break;
+            }
+
+          }
+
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+
+        // join all the threads
+        try {
+          for (Thread thread : threads) {
+            thread.join();
+          }
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+
+        // Merge the results from the workers
+        LOGGER.info("Merging results...");
+        Integer[] merged = merge(resultChunks);
+        LOGGER.info("Merged results: " + Arrays.toString(merged));
+
+        // Send the merged result to the client
+        outputStream.writeObject(merged);
+        outputStream.flush();
+
+        inputStream.close();
+        outputStream.close();
+        clientSocket.close();
+
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } catch (ClassNotFoundException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+  }
+
   public static void main(String[] args) {
-    // Add all servers to serverStatus with false
-    for (InetSocketAddress serverAddress : SERVER_ADDRESSES) {
-      serverStatus.put(inetSocketAddressToString(serverAddress), false);
-    }
-
-    try {
-      System.out.println("FrRE servers: " + Arrays.toString(getFreeServers()));
-
-      ServerSocket ss = new ServerSocket(6666, 100);
-      log("Server started");
-
-      Socket mainClientSocket = ss.accept();
-      log("Connected to " + mainClientSocket.getInetAddress() + ":" + mainClientSocket.getPort());
-
-      // Accept Object from client
-      ObjectOutputStream oos = new ObjectOutputStream(mainClientSocket.getOutputStream());
-      ObjectInputStream ois = new ObjectInputStream(mainClientSocket.getInputStream());
-
-      Integer[] ints = (Integer[]) ois.readObject();
-      System.out.println("ints= " + Arrays.toString(ints));
-
-      // Divide the integers array into chunks of size n
-      int partitions = 4;
-      int chunkSize = ints.length / partitions;
-      Integer[][] chunks = divide(ints, chunkSize);
-
-      // Create a copy of the chunks
-      Integer[][] resultChunks = new Integer[chunks.length][chunks[0].length];
-
-      // Print the chunks
-      for (Integer[] chunk : chunks) {
-        System.out.println("chunk= " + Arrays.toString(chunk));
-      }
-
-      List<Thread> threads = new ArrayList<>();
-      // send the chunks to servers clients
-
-      // Iterate over the chunks (4 chunks)
-      // Get the free servers (2 free servers)
-      // Create a new thread for each chunk depending on the free servers
-      // - 2 chunks will be sent to 2 servers
-
-      // send the chunks to servers clients in threads
-      try {
-        int chunkIndex = 0;
-
-        while (true) { // 4 chunks
-          InetSocketAddress[] serverAddresses = {};
-
-          try {
-            serverAddresses = getFreeServers(); // 0 servers
-          } catch (Exception e) {
-            System.out.println("No servers available");
-            Thread.sleep(1000);
-            continue;
-          }
-
-          // log the servers
-          log("Free servers: " + Arrays.toString(serverAddresses));
-
-          // if (serverAddresses.length == 0) {
-          //   log("No free servers at the moment. Waiting for free servers...");
-          //   Thread.sleep(1000);
-          //   continue;
-          // }
-
-          // log free servers
-          log("Free servers: " + Arrays.toString(serverAddresses));
-
-          // Iterate over the free servers
-          for (InetSocketAddress serverAddress : serverAddresses) { // 1st server
-            // Fix: Local variable chunkIndex defined in an enclosing scope must be final or
-            // effectively final
-            final int chunkIndexFinal = chunkIndex;
-
-            // Set the server status to busy
-            serverStatus.put(inetSocketAddressToString(serverAddress), true);
-
-            Thread thread = new Thread(() -> {
-              try {
-                // Create a new socket
-                Socket clientSocket = new Socket(serverAddress.getHostName(), serverAddress.getPort());
-                log("Connected to " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
-
-                // Send the chunk to the server
-                Integer[] result = task(clientSocket, chunks[chunkIndexFinal]);
-
-                // Merge the result chunks
-                resultChunks[chunkIndexFinal] = result;
-
-                // Print the result
-                System.out.println("result= " + Arrays.toString(result));
-
-                // Close the socket
-                clientSocket.close();
-
-                // Free the server
-                log("Freeing server: " + serverAddress.toString());
-                serverStatus.put(inetSocketAddressToString(serverAddress), false);
-                // Print hashmap serverStatus
-                log("serverStatus: " + serverStatus.toString());
-              } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-              }
-            });
-            chunkIndex++; // 4th chunk
-
-            threads.add(thread);
-            thread.start();
-          }
-
-          if (chunkIndex == chunks.length) {
-            break;
-          }
-
-        }
-
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-
-      // join all the threads
-      try {
-        for (Thread thread : threads) {
-          thread.join();
-        }
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-
-      System.out.println("FREE servers: " + Arrays.toString(getFreeServers()));
-
-      // log running this after joining the threads
-      log("Running this after joining the threads");
-
-      // Merge the results from the workers
-      System.out.println("Merging results");
-      Integer[] merged = merge(resultChunks);
-      System.out.println("merged= " + Arrays.toString(merged));
-
-      // Send the merged result to the client
-      oos.writeObject(merged);
-      oos.flush();
-
-      ois.close();
-      oos.close();
-      mainClientSocket.close();
-      ss.close();
-    } catch (Exception e) {
-      System.out.println(e);
-    }
+    Manager manager = new Manager(1);
+    manager.addWorker(new InetSocketAddress("localhost", 9001));
+    manager.addWorker(new InetSocketAddress("localhost", 9002));
+    manager.addWorker(new InetSocketAddress("localhost", 9003));
+    manager.start(6666);
   }
 }
