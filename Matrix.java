@@ -5,7 +5,7 @@ import java.util.logging.Logger;
  * Execution: java Matrix
  *
  * A bare-bones immutable data type for M-by-N matrices.
- * 
+ *
  * Credit: The code is adapted from
  * https://introcs.cs.princeton.edu/java/95linear/Matrix.java.html
  ******************************************************************************/
@@ -118,12 +118,12 @@ final public class Matrix {
     return true;
   }
 
-  public Matrix quarterify(int index) {
+ /*  public Matrix quarterify(int index) {
     // Divide the matrix into 4 quarters
     Matrix quarter = new Matrix(M / 2, N / 2);
-
+    int len = M / 2;
     switch (index) {
-      case 1:
+      case 0:
         // Quarter 1
         for (int i = 0; i < M / 2; i++) {
           for (int j = 0; j < N / 2; j++) {
@@ -131,33 +131,150 @@ final public class Matrix {
           }
         }
         break;
-      case 2:
+      case 1:
         // Quarter 2
         for (int i = 0; i < M / 2; i++) {
           for (int j = N / 2; j < N; j++) {
-            quarter.data[i][j] = data[i][j];
+            quarter.data[i][j] = data[i][j + len];
+          }
+        }
+        break;
+      case 2:
+        // Quarter 3
+        for (int i = M / 2; i < M; i++) {
+          for (int j = 0; j < N / 2; j++) {
+            quarter.data[i][j] = data[i + len][j];
           }
         }
         break;
       case 3:
-        // Quarter 3
-        for (int i = M / 2; i < M; i++) {
-          for (int j = 0; j < N / 2; j++) {
-            quarter.data[i][j] = data[i][j];
-          }
-        }
-        break;
-      case 4:
         // Quarter 4
         for (int i = M / 2; i < M; i++) {
           for (int j = N / 2; j < N; j++) {
-            quarter.data[i][j] = data[i][j];
+            quarter.data[i][j] = data[i + len][j + len];
           }
         }
         break;
     }
 
     return quarter;
+  }
+ */
+  public Matrix quarterify(int index) {
+    // Assuming this is a quarter matrix and M and N are both even or specifically
+    // M and N should be equal and should be a power of 2
+    int len = this.M / 2;
+    Matrix quarter = new Matrix(this.M / 2, this.N / 2);
+    for (int i = 0; i < len; i++) {
+      for (int j = 0; j < len; j++) {
+        switch (index) {
+          case 0:
+            quarter.data[i][j] = this.data[i][j];
+            break;
+          case 1:
+            quarter.data[i][j] = this.data[i][j + len];
+            break;
+          case 2:
+            quarter.data[i][j] = this.data[i + len][j];
+            break;
+          case 3:
+            quarter.data[i][j] = this.data[i + len][j + len];
+            break;
+        }
+      }
+    }
+    return quarter;
+  }
+
+  // send it whichever quarter it is and then use it to apply the elements from
+  // that matrix.
+  public static void resetMatrix(Matrix mtx, Matrix submtx, int index) {
+
+    for (int i = 0; i < submtx.M; i++) {
+      for (int j = 0; j < submtx.N; j++) {
+        switch (index) {
+          case 0:
+            mtx.data[i][j] = submtx.data[i][j];
+            break;
+          case 1:
+            mtx.data[i][j + submtx.N] = submtx.data[i][j];
+            break;
+          case 2:
+            mtx.data[i + submtx.M][j] = submtx.data[i][j];
+            break;
+          case 3:
+            mtx.data[i + submtx.M][j + submtx.N] = submtx.data[i][j];
+            break;
+        }
+      }
+    }
+  }
+
+  public static Matrix strassen(Matrix mtx1, Matrix mtx2) {
+    // Assuming that by the time the matrices come here, we have these square
+    // matrices: So, M == N
+    int len = mtx1.M / 2;
+    Matrix resultantMatrix = new Matrix(mtx1.M, mtx1.N);
+
+    if (len == 0) {
+      resultantMatrix.data[0][0] = mtx1.data[0][0] * mtx2.data[0][0];
+    } else {
+      for (int i = 0; i < mtx1.M; i++) {
+        for (int j = 0; j < mtx2.N; j++) {
+          resultantMatrix.data[i][j] = 0;
+        }
+      }
+
+      Matrix a1 = mtx1.quarterify(0);
+      Matrix a2 = mtx1.quarterify(1);
+      Matrix a3 = mtx1.quarterify(2);
+      Matrix a4 = mtx1.quarterify(3);
+      Matrix b1 = mtx2.quarterify(0);
+      Matrix b2 = mtx2.quarterify(1);
+      Matrix b3 = mtx2.quarterify(2);
+      Matrix b4 = mtx2.quarterify(3);
+
+      Matrix m1 = Matrix.strassen(a1, b2.minus(b4));
+      Matrix m2 = Matrix.strassen(a1.plus(a2), b4);
+      Matrix m3 = Matrix.strassen(a3.plus(a4), b1);
+      Matrix m4 = Matrix.strassen(a4, b3.minus(b1));
+      Matrix m5 = Matrix.strassen(a1.plus(a4), b1.plus(b4));
+      Matrix m6 = Matrix.strassen(a2.minus(a4), b3.plus(b4));
+      Matrix m7 = Matrix.strassen(a1.minus(a3), b1.plus(b2));
+
+      // create the four new quadrants of the resultantMatrix.
+      /**
+       * Q1 = M5 + M4 - M2 + M6
+       * Q2 = M1 + M2
+       * Q3 = M3 + M4
+       * Q4 = M1 + M5 - M3 - M7
+       **/
+
+      Matrix Q1 = ((m5.plus(m4)).minus(m2)).plus(m6);
+      Matrix Q2 = m1.plus(m2);
+      Matrix Q3 = m3.plus(m4);
+      Matrix Q4 = ((m1.plus(m5)).minus(m3)).minus(m7);
+
+      resetMatrix(resultantMatrix, Q1, 0);
+      resetMatrix(resultantMatrix, Q2, 1);
+      resetMatrix(resultantMatrix, Q3, 2);
+      resetMatrix(resultantMatrix, Q4, 3);
+
+    }
+
+    return resultantMatrix;
+  }
+
+  // if n is odd,we fill remaining rows and columns with zeros to make it even
+  // order matrix
+  public Matrix fillZeros(int n) {
+    Matrix A = new Matrix(n, n);
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        A.data[i][j] = data[i][j];
+      }
+    }
+    return A;
   }
 
   // return C = A * B
@@ -236,13 +353,37 @@ final public class Matrix {
   public static void main(String[] args) {
     double[][] d = { { 1, 2, 3, 3 }, { 4, 5, 6, 3 }, { 9, 1, 3, 4 }, { 1, 2, 3, 4 } };
     Matrix D = new Matrix(d);
-    Matrix Q = D.quarterify(1);
+    Matrix Q = D.quarterify(0);
     D.show();
     System.out.println();
 
-    System.out.println("Quarter 1");
-    Q.show();
+    // System.out.println("Quarter 1");
+    // Q.show();
+    // System.out.println("-----------------\n");
+
+    // Q = D.quarterify(1);
+    // System.out.println("Quarter 2");
+    // Q.show();
+    // System.out.println("-----------------\n");
+
+    // Q = D.quarterify(2);
+    // System.out.println("Quarter 3");
+    // Q.show();
+    // System.out.println("-----------------\n");
+
+    // Q = D.quarterify(3);
+    // System.out.println("Quarter 4");
+    // Q.show();
+    // System.out.println("-----------------\n");
+
+    Matrix d_square = Matrix.strassen(D, D);
+    d_square.show();
     System.out.println();
+    // ------------------------
+
+    // double[][] e = { { 1, 2, 3 }, { 4, 5, 6 }, { 9, 1, 3 } };
+    // Matrix E = new Matrix(e);
+    // Matrix newMat = E.fillZeros()
 
     // Matrix A = Matrix.random(5, 5);
     // A.show();
