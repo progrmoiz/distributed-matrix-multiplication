@@ -3,12 +3,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 public class MainClient {
   private Socket clientSocket;
   private ObjectOutputStream outputStream;
   private ObjectInputStream inputStream;
 
+  // Logger for this class
+  private static final Logger LOGGER = Logger.getLogger(Manager.class.getName());
+  
   public void startConnection(String ip, int port) {
     try {
       clientSocket = new Socket(ip, port);
@@ -41,7 +45,36 @@ public class MainClient {
     return null;
   }
 
+  public Matrix receiveDataMatrixes() {
+    try {
+      return (Matrix) inputStream.readObject();
+    } catch (IOException e) {
+      System.out.println("Receiving data failed");
+      e.printStackTrace();
+    } catch (ClassNotFoundException e) {
+      System.out.println("Receiving data failed");
+      e.printStackTrace();
+    } catch (Exception e) {
+      System.out.println(e);
+      e.printStackTrace();
+    }
+    return null;
+  }
+
   public void sendData(Integer[] data) {
+    try {
+      outputStream.writeObject(data);
+      outputStream.flush();
+    } catch (IOException e) {
+      System.out.println("Sending data failed");
+      e.printStackTrace();
+    } catch (Exception e) {
+      System.out.println(e);
+      e.printStackTrace();
+    }
+  }
+
+  public void sendData(Matrix[] data) {
     try {
       outputStream.writeObject(data);
       outputStream.flush();
@@ -70,20 +103,29 @@ public class MainClient {
 
   public static void main(String[] args) {
     // integer collection
-    Integer[] ints = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+    // Integer[] ints = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
     // Create an integer array of 1 million elements and fill it with random numbers
     // Integer[] ints = new Integer[1000000];
     // for (int i = 0; i < ints.length; i++) {
       // ints[i] = (int) (Math.random() * 100);
     // }
 
+    Matrix matrixA = Matrix.random(16, 16);
+    Matrix matrixB = Matrix.random(16, 16);
+
+    Matrix[] matrices = { matrixA, matrixB };
+
     MainClient mainClient = new MainClient();
     mainClient.startConnection("localhost", 6666);
-    mainClient.sendData(ints);
+    LOGGER.info("Sending matrices to manager...");
+    matrixA.show("A");
+    matrixB.show("B");
+    mainClient.sendData(matrices);
 
     // receive data
-    Integer[] receivedData = mainClient.receiveData();
-    System.out.println("Received data: " + Arrays.toString(receivedData));
+    Matrix receivedData = mainClient.receiveDataMatrixes();
+    LOGGER.info("Received final output from manager.");
+    receivedData.show("Final output");
 
     mainClient.stopConnection();
   }

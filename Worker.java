@@ -12,7 +12,7 @@ public class Worker {
 
   // Logger for this class
   private static final Logger LOGGER = Logger.getLogger(Worker.class.getName());
-  
+
   /**
    * Start a server socket and wait for a connection.
    *
@@ -82,11 +82,17 @@ public class Worker {
         outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
         inputStream = new ObjectInputStream(clientSocket.getInputStream());
 
-        Integer[] data = (Integer[]) inputStream.readObject();
-        LOGGER.info("Received data: " + Arrays.toString(data));
+        Matrix[][] data = (Matrix[][]) inputStream.readObject();
+        Matrix[] matrixAChunks = data[0];
+        Matrix[] matrixBChunks = data[1];
 
-        Integer[] result = compute(data, 1);
-        LOGGER.info("Computed data: " + Arrays.toString(result));
+        Matrix result = Matrix.dot(matrixAChunks, matrixBChunks);
+
+        System.err.println("Computed data::: ");
+        result.show();
+
+        // Integer[] result = compute(data, 1);
+        // LOGGER.info("Computed data: " + Arrays.toString(result));
 
         outputStream.writeObject(result);
         outputStream.flush();
