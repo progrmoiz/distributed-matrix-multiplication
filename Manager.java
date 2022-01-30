@@ -53,6 +53,11 @@ public class Manager {
 
   // Manager constructor
   public Manager(int partitionSize) {
+    // partitionSize must be a power of 4
+    if (partitionSize < 4 || (partitionSize & (partitionSize - 1)) != 0) {
+      throw new IllegalArgumentException("partitionSize must be a power of 4");
+    }
+
     this.partitionSize = partitionSize;
   }
 

@@ -110,8 +110,8 @@ public class MainClient {
       // ints[i] = (int) (Math.random() * 100);
     // }
 
-    Matrix matrixA = Matrix.random(16, 16);
-    Matrix matrixB = Matrix.random(16, 16);
+    Matrix matrixA = Matrix.random(4, 4);
+    Matrix matrixB = Matrix.random(4, 4);
 
     Matrix[] matrices = { matrixA, matrixB };
 
