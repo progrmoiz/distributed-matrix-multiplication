@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 /******************************************************************************
@@ -118,48 +119,6 @@ final public class Matrix {
     return true;
   }
 
- /*  public Matrix quarterify(int index) {
-    // Divide the matrix into 4 quarters
-    Matrix quarter = new Matrix(M / 2, N / 2);
-    int len = M / 2;
-    switch (index) {
-      case 0:
-        // Quarter 1
-        for (int i = 0; i < M / 2; i++) {
-          for (int j = 0; j < N / 2; j++) {
-            quarter.data[i][j] = data[i][j];
-          }
-        }
-        break;
-      case 1:
-        // Quarter 2
-        for (int i = 0; i < M / 2; i++) {
-          for (int j = N / 2; j < N; j++) {
-            quarter.data[i][j] = data[i][j + len];
-          }
-        }
-        break;
-      case 2:
-        // Quarter 3
-        for (int i = M / 2; i < M; i++) {
-          for (int j = 0; j < N / 2; j++) {
-            quarter.data[i][j] = data[i + len][j];
-          }
-        }
-        break;
-      case 3:
-        // Quarter 4
-        for (int i = M / 2; i < M; i++) {
-          for (int j = N / 2; j < N; j++) {
-            quarter.data[i][j] = data[i + len][j + len];
-          }
-        }
-        break;
-    }
-
-    return quarter;
-  }
- */
   public Matrix quarterify(int index) {
     // Assuming this is a quarter matrix and M and N are both even or specifically
     // M and N should be equal and should be a power of 2
@@ -184,6 +143,49 @@ final public class Matrix {
       }
     }
     return quarter;
+  }
+
+  /* Function to check if x is power of 2 */
+  static boolean isPowerOfTwo(int n) {
+    return (int) (Math.ceil((Math.log(n) / Math.log(2)))) == (int) (Math.floor(((Math.log(n) / Math.log(2)))));
+  }
+
+  // method to split parent matrix into child matrices
+  public Matrix split(int childMatrixLength, int fromIndex, int toIndex) {
+    Matrix child = new Matrix(childMatrixLength, childMatrixLength);
+
+    for (int i1 = 0, i2 = fromIndex; i1 < childMatrixLength; i1++, i2++)
+      for (int j1 = 0, j2 = toIndex; j1 < childMatrixLength; j1++, j2++)
+        child.data[i1][j1] = data[i2][j2];
+
+    return child;
+  }
+
+  // Use the divide strategy to split the matrix into n parts and return the array
+  // of matrices
+  public Matrix[] divide(int childMatrixLength) {
+    // childMatrixLength should be less than or equal to M throw error
+    if (childMatrixLength > M) {
+      throw new IllegalArgumentException("childMatrixLength should be less than or equal to M");
+    }
+
+    // childMatrixLength should be a power of 2 throw error
+    if (!isPowerOfTwo(childMatrixLength)) {
+      throw new IllegalArgumentException("childMatrixLength should be a power of 2");
+    }
+
+    int len = M / childMatrixLength;
+
+    Matrix[] groups = new Matrix[len * len];
+    int multiplier = M / len;
+
+    for (int i = 0; i < len; i++) {
+      for (int j = 0; j < len; j++) {
+        groups[i * len + j] = split(childMatrixLength, i * multiplier, j * multiplier);
+      }
+    }
+
+    return groups;
   }
 
   // send it whichever quarter it is and then use it to apply the elements from
@@ -354,8 +356,23 @@ final public class Matrix {
     double[][] d = { { 1, 2, 3, 3 }, { 4, 5, 6, 3 }, { 9, 1, 3, 4 }, { 1, 2, 3, 4 } };
     Matrix D = new Matrix(d);
     Matrix Q = D.quarterify(0);
-    D.show();
+    // D.show();
     System.out.println();
+
+    // create a 8x8 matrix with random values
+
+    Matrix A = Matrix.random(8, 8);
+    A.show();
+    System.out.println();
+
+    int childMatrixDimension = 4;
+
+    Matrix[] parts = A.divide(childMatrixDimension);
+    for (int i = 0; i < parts.length; i++) {
+      System.out.println("Part " + i);
+      parts[i].show();
+      System.out.println();
+    }
 
     // System.out.println("Quarter 1");
     // Q.show();
@@ -376,9 +393,9 @@ final public class Matrix {
     // Q.show();
     // System.out.println("-----------------\n");
 
-    Matrix d_square = Matrix.strassen(D, D);
-    d_square.show();
-    System.out.println();
+    // Matrix d_square = Matrix.strassen(D, D);
+    // d_square.show();
+    // System.out.println();
     // ------------------------
 
     // double[][] e = { { 1, 2, 3 }, { 4, 5, 6 }, { 9, 1, 3 } };
