@@ -62,7 +62,7 @@ public class Manager {
   }
 
   public Manager() {
-    this.partitionSize = 2;
+    this.partitionSize = 4;
   }
 
   /**
@@ -97,7 +97,7 @@ public class Manager {
       }
 
     } catch (IOException e) {
-      LOGGER.info("Connection failed");
+      LOGGER.severe("Connection failed");
       e.printStackTrace();
     }
   }
@@ -113,33 +113,6 @@ public class Manager {
     }
   }
 
-  // Divide integer array into chunks of size n
-  public static Integer[][] divide(Integer[] ints, int n) {
-    int numChunks = ints.length / n;
-    Integer[][] chunks = new Integer[numChunks][n];
-    for (int i = 0; i < numChunks; i++) {
-      for (int j = 0; j < n; j++) {
-        chunks[i][j] = ints[i * n + j];
-      }
-    }
-    return chunks;
-  }
-
-  // Merge all the integer arrays into one
-  public static Integer[] merge(Integer[][] ints) {
-    int totalLength = 0;
-    for (Integer[] chunk : ints) {
-      totalLength += chunk.length;
-    }
-    Integer[] merged = new Integer[totalLength];
-    int index = 0;
-    for (Integer[] chunk : ints) {
-      for (Integer i : chunk) {
-        merged[index++] = i;
-      }
-    }
-    return merged;
-  }
 
   /**
    * This is our manager job handler.
@@ -148,40 +121,9 @@ public class Manager {
    * 3. Receive a output from the worker
    *
    * @param Socket    clientSocket - The socket to the worker
-   * @param Integer[] chunk - The data to send to the worker
+   * @param Matrix[][] chunk - The data to send to the worker
    *
-   * @return Integer[] - The data received from the worker
-   */
-  public static Integer[] job(Socket clientSocket, Integer[] chunk) throws IOException, ClassNotFoundException {
-    // Write the chunk to the socket
-    ObjectOutputStream oos2 = new ObjectOutputStream(clientSocket.getOutputStream());
-    oos2.writeObject(chunk);
-    oos2.flush();
-    LOGGER.info("Sent chunk to worker, chunk: " + Arrays.toString(chunk));
-
-    // Read the result from the socket
-    ObjectInputStream ois2 = new ObjectInputStream(clientSocket.getInputStream());
-    Integer[] result = (Integer[]) ois2.readObject();
-    LOGGER.info("Received result: " + Arrays.toString(result));
-
-    // Close the socket
-    ois2.close();
-    oos2.close();
-    clientSocket.close();
-
-    return result;
-  }
-
-  /**
-   * This is our manager job handler.
-   * 1. Send a input to the worker
-   * 2. Let the worker handle the job
-   * 3. Receive a output from the worker
-   *
-   * @param Socket    clientSocket - The socket to the worker
-   * @param Integer[] chunk - The data to send to the worker
-   *
-   * @return Integer[] - The data received from the worker
+   * @return Matrix - The data received from the worker
    */
   public static Matrix job(Socket clientSocket, Matrix[][] chunk) throws IOException, ClassNotFoundException {
     // Write the chunk to the socket
@@ -241,23 +183,22 @@ public class Manager {
     int numWorkers = (int) Math.pow(dimensionOfMatrix, 2) / elementsInChunks; //8*8 = num elements in each matrix
     int gameChanger = (int) Math.sqrt(numWorkers);
 
-    System.out.println("<--------------------FOCUS HERE--------------->");
     Matrix[][][] resultMatrices = new Matrix[numWorkers][2][gameChanger];
 
     for (int i = 0; i < numWorkers; i++) {
-      System.out.println("Worker# " + i);
+      // System.out.println("Worker# " + i);
       int startA = (i / gameChanger) * gameChanger;
       int endA = startA + gameChanger;
-      System.out.println("We will feed these chunk numbers of A to this worker:");
+      // System.out.println("We will feed these chunk numbers of A to this worker:");
       Matrix[] aChunksToWorker = new Matrix[gameChanger];
 
       int aChunkCounter = 0;
       for (int x = startA; x < endA; x++) {
-        System.out.print(x + " ");
+        // System.out.print(x + " ");
         aChunksToWorker[aChunkCounter++] = aChunks[x];
       }
-      System.out.println();
-      System.out.println("We will feed these chunk numbers of B to this worker:");
+      // System.out.println();
+      // System.out.println("We will feed these chunk numbers of B to this worker:");
       int startB = (i % gameChanger);
       int numElementsInB = 0;
 
@@ -265,7 +206,7 @@ public class Manager {
 
       int bChunkCounter = 0;
       for (int x = startB;; x += gameChanger) {
-        System.out.print(x + " ");
+        // System.out.print(x + " ");
         bChunksToWorker[bChunkCounter++] = bChunks[x];
 
         numElementsInB++;
@@ -276,7 +217,7 @@ public class Manager {
       Matrix[][] temp = { aChunksToWorker, bChunksToWorker };
       resultMatrices[i] = temp;
 
-      System.out.println();
+      // System.out.println();
     }
 
     return resultMatrices;
@@ -291,55 +232,32 @@ public class Manager {
       this.clientSocket = clientSocket;
     }
 
-    public void run1() {
-      try {
-        outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-        inputStream = new ObjectInputStream(clientSocket.getInputStream());
-
-        Matrix[] data = (Matrix[]) inputStream.readObject();
-
-        Matrix matrixA = data[0];
-        Matrix matrixB = data[1];
-
-        matrixA.show();
-        matrixB.show();
-
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-
     public void run() {
       try {
         outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
         inputStream = new ObjectInputStream(clientSocket.getInputStream());
 
         Matrix[] data = (Matrix[]) inputStream.readObject();
-        // LOGGER.info("Received data: " + Arrays.toString(data));
 
         Matrix matrixA = data[0];
         Matrix matrixB = data[1];
 
+        LOGGER.info("Received matrices from client: ");
         matrixA.show("A");
         matrixB.show("B");
 
-        // Integer[] result = compute(data, 1);
-        // LOGGER.info("Computed data: " + Arrays.toString(result));
-
         // Divide the integers array into chunks of size n
-        // int chunkSize = data.length / partitionSize;
-        // Integer[][] chunks = divide(data, chunkSize);
         int chunkSize = (int) Math.sqrt(Math.pow(matrixA.getM(), 2) / partitionSize);
-        // int chunkSize = 4;
+
         // MatrixAChunks[
-        // Matrix[
-        //  1  2 <- ChunkSize = 2
-        //  3  4
-        // ],
-        // Matrix[
-        //  5  6
-        //  7  8
-        // ]
+        //   Matrix[
+        //    1  2 <- ChunkSize = 2
+        //    3  4
+        //   ],
+        //   Matrix[
+        //    5  6
+        //    7  8
+        //   ]
         // ]
         Matrix[] matrixAChunks = matrixA.divide(chunkSize);
         Matrix[] matrixBChunks = matrixB.divide(chunkSize);
@@ -348,16 +266,12 @@ public class Manager {
 
         // Create a copy of the chunks
         Matrix[] resultChunks = new Matrix[chunks.length];
-        // Integer[][] resultChunks = new Integer[chunks.length][chunks[0].length];
 
-        // Print the chunks
-        // for (Integer[] chunk : chunks) {
-        //   System.out.println("chunk= " + Arrays.toString(chunk));
-        // }
-
+        // We will keep track of our threads so later we can pause execution
+        // to wait for all threads to finish
         List<Thread> threads = new ArrayList<>();
-        // send the chunks to servers clients
 
+        // Example
         // Iterate over the chunks (4 chunks)
         // Get the free servers (2 free servers)
         // Create a new thread for each chunk depending on the free servers
@@ -424,7 +338,6 @@ public class Manager {
                 } catch (IOException e) {
                   e.printStackTrace();
                 } catch (ClassNotFoundException e) {
-                  // TODO Auto-generated catch block
                   e.printStackTrace();
                 }
               });

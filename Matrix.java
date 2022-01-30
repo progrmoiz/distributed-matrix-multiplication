@@ -222,31 +222,6 @@ final public class Matrix implements Serializable {
 
   // send it whichever quarter it is and then use it to apply the elements from
   // that matrix.
-  public void resetMatrix(Matrix submtx, int index) {
-
-    for (int i = 0; i < submtx.M; i++) {
-      for (int j = 0; j < submtx.N; j++) {
-        switch (index) {
-          case 0:
-            data[i][j] = submtx.data[i][j];
-            break;
-          case 1:
-            data[i][j + submtx.N] = submtx.data[i][j];
-            break;
-          case 2:
-            data[i + submtx.M][j] = submtx.data[i][j];
-            break;
-          case 3:
-            data[i + submtx.M][j + submtx.N] = submtx.data[i][j];
-            break;
-        }
-      }
-    }
-
-  }
-
-  // send it whichever quarter it is and then use it to apply the elements from
-  // that matrix.
   public static void resetMatrix(Matrix mtx, Matrix submtx, int index) {
 
     for (int i = 0; i < submtx.M; i++) {
