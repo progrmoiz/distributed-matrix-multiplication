@@ -384,10 +384,9 @@ public class Manager {
         clientSocket.close();
 
       } catch (IOException e) {
-        // TODO Auto-generated catch block
+        LOGGER.severe("Error while handling client: " + e.getMessage());
         e.printStackTrace();
       } catch (ClassNotFoundException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }

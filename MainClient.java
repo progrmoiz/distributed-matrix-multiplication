@@ -87,7 +87,7 @@ public class MainClient {
     // receive data
     Matrix receivedData = mainClient.receiveData();
     LOGGER.info("Received final output from manager.");
-    receivedData.show("Final output");
+    receivedData.show("A x B");
 
     mainClient.stopConnection();
   }
