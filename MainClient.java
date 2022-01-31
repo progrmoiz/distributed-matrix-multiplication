@@ -65,8 +65,8 @@ public class MainClient {
   }
 
   public static void main(String[] args) {
-    Matrix matrixA = Matrix.random(4, 4);
-    Matrix matrixB = Matrix.random(4, 4);
+    Matrix matrixA = Matrix.random(2, 4);
+    Matrix matrixB = Matrix.random(4, 3);
 
     Matrix[] matrices = { matrixA, matrixB };
 

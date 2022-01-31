@@ -256,8 +256,11 @@ public class Manager {
 
         Matrix[] data = (Matrix[]) inputStream.readObject();
 
-        Matrix matrixA = data[0];
-        Matrix matrixB = data[1];
+        Matrix tempMatrixA = data[0];
+        Matrix matrixA = Matrix.padding(tempMatrixA);
+
+        Matrix tempMatrixB = data[1];
+        Matrix matrixB = Matrix.padding(tempMatrixB);
 
         LOGGER.info("Received matrices from client: ");
         matrixA.show("A");
@@ -389,10 +392,11 @@ public class Manager {
 
         // Merge the results from the workers
         LOGGER.info("Merging results...");
-        Matrix merged = new Matrix(matrixA.getM(), matrixA.getN());
+        Matrix tempMerged = new Matrix(matrixA.getM(), matrixA.getN());
+        tempMerged.joinAll(resultChunks);
 
-        // TODO: If filled with zeros, remove extra zeros from the output
-        merged.joinAll(resultChunks);
+        // If filled with zeros, remove extra zeros from the output
+        Matrix merged = Matrix.cut(tempMerged, tempMatrixA.getM(), tempMatrixB.getN());
         merged.show();
 
         // Send the merged result to the client

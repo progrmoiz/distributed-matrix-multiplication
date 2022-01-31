@@ -159,6 +159,18 @@ final public class Matrix implements Serializable {
     return (int) (Math.ceil((Math.log(n) / Math.log(2)))) == (int) (Math.floor(((Math.log(n) / Math.log(2)))));
   }
 
+  public static Matrix cut(Matrix a, int rows, int cols) {
+    Matrix temp = new Matrix(rows, cols);
+
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        temp.data[i][j] = a.data[i][j];
+      }
+    }
+
+    return temp;
+  }
+
   // method to split parent matrix into child matrices
   public Matrix split(int childMatrixLength, int fromIndex, int toIndex) {
     Matrix child = new Matrix(childMatrixLength, childMatrixLength);
@@ -205,8 +217,6 @@ final public class Matrix implements Serializable {
     }
   }
 
-  // Use the divide strategy to split the matrix into n parts and return the array
-  // of matrices
   public void joinAll(Matrix[] matrices) {
     int childMatrixLength = matrices[0].getM();
     int len = M / childMatrixLength;
@@ -217,7 +227,30 @@ final public class Matrix implements Serializable {
         join(matrices[i * len + j], i * multiplier, j * multiplier);
       }
     }
+  }
 
+  // Credit:
+  // https://github.com/liangyue268/CPE-593/blob/00b590f46666f7bbf7a72af09dcb57d59f52c2d6/HW6/Strassen.java
+  public static Matrix padding(Matrix a) {
+    int length = (int) Math.pow(2, Math.ceil(Math.log(Math.max(a.getM(), a.getN())) / Math.log(2)));
+
+    Matrix paddedMatrix = new Matrix(length, length);
+
+    for (int i = 0; i < a.getM(); i++) {
+      for (int j = 0; j < a.getN(); j++) {
+        paddedMatrix.data[i][j] = a.data[i][j];
+      }
+      for (int j = a.getN(); j < length; j++) {
+        paddedMatrix.data[i][j] = 0;
+      }
+    }
+
+    for (int i = a.getM(); i < length; i++) {
+      for (int j = 0; j < length; j++) {
+        paddedMatrix.data[i][j] = 0;
+      }
+    }
+    return paddedMatrix;
   }
 
   // send it whichever quarter it is and then use it to apply the elements from
@@ -449,29 +482,30 @@ final public class Matrix implements Serializable {
     Matrix[][][] matrixChunks = new Matrix[matrixAChunks.length][2][matrixAChunks[0].getM()];
     Matrix[][][] matrixChunks1 = new Matrix[matrixAChunks.length][2][matrixAChunks[0].getM()];
 
-
     Matrix AAA = new Matrix(8, 8);
     Matrix[] As = {
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
-      Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
+        Matrix.random(2, 2),
     };
     AAA.joinAll(As);
     AAA.show();
 
+    Matrix testPadding = Matrix.random(8, 8);
+    Matrix.padding(testPadding).show("Test padding:");
 
     // System.out.println(Helper.convertToIndex(0, 0, chunkSize));
     // System.out.println(Helper.convertToIndex(0, 1, chunkSize));
