@@ -422,8 +422,8 @@ public class Manager {
   public static void main(String[] args) {
     Manager manager = new Manager((int) Math.pow(4, 1));
     manager.addWorker(new InetSocketAddress("localhost", 9001));
-    manager.addWorker(new InetSocketAddress("192.168.1.106", 9002));
-    // manager.addWorker(new InetSocketAddress("localhost", 9003));
+    manager.addWorker(new InetSocketAddress("8.tcp.ngrok.io", 16500));
+    // manager.addWorker(new InetSocketAddress("59.103.212.155", 80));
 
     // if (manager.checkWorkersConnection()) {
     // LOGGER.info("All workers are connected");

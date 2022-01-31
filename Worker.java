@@ -5,6 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Logger;
 
+// make a worker class multi-threaded
+
 public class Worker {
   // Server socket for accepting client connections
   private ServerSocket serverSocket;

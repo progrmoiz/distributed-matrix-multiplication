@@ -1,7 +1,5 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 /******************************************************************************
@@ -159,41 +157,6 @@ final public class Matrix implements Serializable {
   /* Function to check if x is power of 2 */
   static boolean isPowerOfTwo(int n) {
     return (int) (Math.ceil((Math.log(n) / Math.log(2)))) == (int) (Math.floor(((Math.log(n) / Math.log(2)))));
-  }
-
-  // Read matrix from .txt file
-  // Format:
-  // M N
-  // 1,2,3,4
-  // 5,6,7,8
-  // 9,10,11,12
-  public static Matrix readMatrixFromFile(String filename) {
-    try {
-      FileReader fileReader = new FileReader(filename);
-      BufferedReader bufferedReader = new BufferedReader(fileReader);
-      String line;
-      int M = 0, N = 0;
-      double[][] data = null;
-      int i = 0;
-      while ((line = bufferedReader.readLine()) != null) {
-        String[] lineData = line.split(",");
-        if (i == 0) {
-          M = Integer.parseInt(lineData[0]);
-          N = Integer.parseInt(lineData[1]);
-          data = new double[M][N];
-        } else {
-          for (int j = 0; j < N; j++) {
-            data[i - 1][j] = Double.parseDouble(lineData[j]);
-          }
-        }
-        i++;
-      }
-      bufferedReader.close();
-      return new Matrix(data);
-    } catch (IOException e) {
-      LOGGER.severe("Error reading file: " + filename);
-      return null;
-    }
   }
 
   public static Matrix cut(Matrix a, int rows, int cols) {
@@ -474,9 +437,6 @@ final public class Matrix implements Serializable {
 
   // test client
   public static void main(String[] args) {
-    Matrix P = Matrix.readMatrixFromFile("matrixA.txt");
-    P.show("P");
-
     double[][] d = { { 1, 2, 3, 3 }, { 4, 5, 6, 3 }, { 9, 1, 3, 4 }, { 1, 2, 3, 4 } };
     Matrix D = new Matrix(d);
     Matrix Q = D.quarterify(0);
@@ -572,7 +532,7 @@ final public class Matrix implements Serializable {
     // System.out.println(Helper.convertToIndex(1, 1, chunkSize));
 
     /*
-     * 
+     *
      * [
      * ...task for workers,
      * [
@@ -580,7 +540,7 @@ final public class Matrix implements Serializable {
      * [B0, B2, B3] ...Matrix B (col)
      * ]
      * ]
-     * 
+     *
      */
     /*
      * matrixChunks1[0][0][0] = matrixAChunks[Helper.convertToIndex(0, 0,
@@ -588,60 +548,60 @@ final public class Matrix implements Serializable {
      * //dot
      * matrixChunks1[0][1][0] = matrixBChunks[Helper.convertToIndex(0, 0,
      * chunkSize)];
-     * 
+     *
      * //plus
-     * 
+     *
      * matrixChunks1[0][0][1] = matrixAChunks[Helper.convertToIndex(0, 1,
      * chunkSize)];
      * //dot
      * matrixChunks1[0][1][1] = matrixBChunks[Helper.convertToIndex(1, 0,
      * chunkSize)];
-     * 
-     * 
-     * 
-     * 
+     *
+     *
+     *
+     *
      * matrixChunks1[1][0][0] = matrixAChunks[Helper.convertToIndex(0, 0,
      * chunkSize)];
      * //dot
      * matrixChunks1[1][1][0] = matrixBChunks[Helper.convertToIndex(0, 1,
      * chunkSize)];
-     * 
+     *
      * //plus
-     * 
+     *
      * matrixChunks1[1][0][1] = matrixAChunks[Helper.convertToIndex(0, 1,
      * chunkSize)];
      * //dot
      * matrixChunks1[1][1][1] = matrixBChunks[Helper.convertToIndex(1, 1,
      * chunkSize)];
-     * 
-     * 
-     * 
-     * 
+     *
+     *
+     *
+     *
      * matrixChunks1[2][0][0] = matrixAChunks[Helper.convertToIndex(1, 0,
      * chunkSize)];
      * //dot
      * matrixChunks1[2][1][0] = matrixBChunks[Helper.convertToIndex(0, 0,
      * chunkSize)];
-     * 
+     *
      * //plus
-     * 
+     *
      * matrixChunks1[2][0][1] = matrixAChunks[Helper.convertToIndex(1, 1,
      * chunkSize)];
      * //dot
      * matrixChunks1[2][1][1] = matrixBChunks[Helper.convertToIndex(1, 0,
      * chunkSize)];
-     * 
-     * 
-     * 
-     * 
+     *
+     *
+     *
+     *
      * matrixChunks1[3][0][0] = matrixAChunks[Helper.convertToIndex(1, 0,
      * chunkSize)];
      * //dot
      * matrixChunks1[3][1][0] = matrixBChunks[Helper.convertToIndex(0, 1,
      * chunkSize)];
-     * 
+     *
      * //plus
-     * 
+     *
      * matrixChunks1[3][0][1] = matrixAChunks[Helper.convertToIndex(1, 1,
      * chunkSize)];
      * //dot
@@ -676,7 +636,7 @@ final public class Matrix implements Serializable {
      * w % x (e.g: 5%4 = 1 column of matB)
      * w / x (e.g: 5/4 = 1 row of matA - integer division)
      * x == dim(A)or dim(B)
-     * 
+     *
      */
     // for (int w = 0; w < numChunks; w++) {
     // int x = A.getM();
@@ -705,49 +665,49 @@ final public class Matrix implements Serializable {
      * Matrix A Chunk 0:
      * 0.0889 0.7697
      * 0.5881 0.9030
-     * 
+     *
      * Matrix A Chunk 1:
      * 0.8547 0.3488
      * 0.7491 0.9750
-     * 
+     *
      * Matrix A Chunk 2:
      * 0.6128 0.2170
      * 0.6823 0.3417
-     * 
+     *
      * Matrix A Chunk 3:
      * 0.8508 0.1106
      * 0.0828 0.8620
      * ]
      */
     /*
-     * 
+     *
      * int rows = (int) Math.sqrt(matrixAChunks.length); // [1, 2, 3, 4]
      * int cols = matrixAChunks[0].getM();
-     * 
+     *
      * System.out.println("-------------------");
      * matrixAChunks[Helper.convertToIndex(0, 1, chunkSize)].show();
      * System.out.println("-------------------");
-     * 
+     *
      * // Printing matrixChunksA[0][0]
      * // Printing matrixChunksB[0][0]
      * // Printing matrixChunksA[0][1]
      * // Printing matrixChunksB[1][0]
-     * 
+     *
      * // Printing matrixChunksA[0][0]
      * // Printing matrixChunksB[0][1]
      * // Printing matrixChunksA[0][1]
      * // Printing matrixChunksB[1][1]
-     * 
+     *
      * // Printing matrixChunksA[1][0]
      * // Printing matrixChunksB[0][0]
      * // Printing matrixChunksA[1][1]
      * // Printing matrixChunksB[1][0]
-     * 
+     *
      * // Printing matrixChunksA[1][0]
      * // Printing matrixChunksB[0][1]
      * // Printing matrixChunksA[1][1]
      * // Printing matrixChunksB[1][1]
-     * 
+     *
      * for (int k = 0; k < matrixAChunks.length; k++) {
      * for (int i = 0; i < rows; i++) {
      * for (int j = 0; j < cols; j++) {
@@ -756,10 +716,10 @@ final public class Matrix implements Serializable {
      * matrixAChunks[Helper.convertToIndex(i, k, chunkSize)];
      * // matrixChunks[Helper.convertToIndex(k, j, chunkSize)][1][j] =
      * matrixBChunks[Helper.convertToIndex(k, j, chunkSize)];
-     * 
+     *
      * System.out.println("Printing " + k + " matrixChunksA[" + i + "][" + j + "]");
      * System.out.println("Printing " + k + " matrixChunksB[" + j + "][" + i + "]");
-     * 
+     *
      * // System.out.println(Helper.convertToIndex(j, k, chunkSize) + ", " + j +
      * ", " + k);
      * // matrixAChunks[Helper.convertToIndex(j, k, chunkSize)].show();
