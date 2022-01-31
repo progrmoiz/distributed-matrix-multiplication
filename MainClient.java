@@ -77,6 +77,20 @@ public class MainClient {
 
     Matrix[] matrices = { matrixA, matrixB };
 
+    // Get host and port from command line
+    // String ip = args[0];
+    // int port = Integer.parseInt(args[1]);
+
+    // if (args.length != 2) {
+    //   System.out.println("Usage: java MainClient <host> <port>");
+    //   System.exit(1);
+    // }
+
+    // if (port == 0) {
+    //   System.out.println("Usage: java MainClient <host> <port>");
+    //   System.exit(1);
+    // }
+
     MainClient mainClient = new MainClient();
     mainClient.startConnection("localhost", 6666);
     LOGGER.info("Sending matrices to manager...");

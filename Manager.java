@@ -322,12 +322,15 @@ public class Manager {
 
                    // Send the chunk to the server
                   Matrix result = job(workerClientSocket, chunks[chunkIndexFinal]);
+                  LOGGER.info("Received result from worker " + Helper.inetSocketAddressToString(workerAddress));
 
                   // Merge the result chunks
                   resultChunks[chunkIndexFinal] = result;
 
                   // Close the socket
                   workerClientSocket.close();
+
+                  LOGGER.info("Closed connection to " + Helper.inetSocketAddressToString(workerAddress));
 
                   // Free the server
                   LOGGER.info("Freeing worker: " + Helper.inetSocketAddressToString(workerAddress));
