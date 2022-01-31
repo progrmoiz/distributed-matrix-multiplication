@@ -18,7 +18,7 @@ final public class Matrix implements Serializable {
   private final double[][] data; // M-by-N array
 
   // Logger for this class
-  private static final Logger LOGGER = Logger.getLogger(Manager.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(Matrix.class.getName());
 
   // create M-by-N matrix of 0's
   public Matrix(int M, int N) {
