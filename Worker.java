@@ -3,7 +3,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class Worker {
@@ -84,8 +83,8 @@ public class Worker {
         clientSocket.close();
 
       } catch (IOException e) {
-        LOGGER.info("Connection failed");
-        // e.printStackTrace();
+        LOGGER.info("Connection failed" + e.getMessage());
+        e.printStackTrace();
       } catch (ClassNotFoundException e) {
         // e.printStackTrace();
       }

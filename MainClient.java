@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class MainClient {
@@ -65,8 +64,8 @@ public class MainClient {
   }
 
   public static void main(String[] args) {
-    Matrix matrixA = Matrix.random(2, 4);
-    Matrix matrixB = Matrix.random(4, 3);
+    Matrix matrixA = Matrix.random(4, 4);
+    Matrix matrixB = Matrix.random(4, 4);
 
     Matrix[] matrices = { matrixA, matrixB };
 

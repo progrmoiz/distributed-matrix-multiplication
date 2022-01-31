@@ -1,5 +1,7 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 /******************************************************************************
@@ -157,6 +159,41 @@ final public class Matrix implements Serializable {
   /* Function to check if x is power of 2 */
   static boolean isPowerOfTwo(int n) {
     return (int) (Math.ceil((Math.log(n) / Math.log(2)))) == (int) (Math.floor(((Math.log(n) / Math.log(2)))));
+  }
+
+  // Read matrix from .txt file
+  // Format:
+  // M N
+  // 1,2,3,4
+  // 5,6,7,8
+  // 9,10,11,12
+  public static Matrix readMatrixFromFile(String filename) {
+    try {
+      FileReader fileReader = new FileReader(filename);
+      BufferedReader bufferedReader = new BufferedReader(fileReader);
+      String line;
+      int M = 0, N = 0;
+      double[][] data = null;
+      int i = 0;
+      while ((line = bufferedReader.readLine()) != null) {
+        String[] lineData = line.split(",");
+        if (i == 0) {
+          M = Integer.parseInt(lineData[0]);
+          N = Integer.parseInt(lineData[1]);
+          data = new double[M][N];
+        } else {
+          for (int j = 0; j < N; j++) {
+            data[i - 1][j] = Double.parseDouble(lineData[j]);
+          }
+        }
+        i++;
+      }
+      bufferedReader.close();
+      return new Matrix(data);
+    } catch (IOException e) {
+      LOGGER.severe("Error reading file: " + filename);
+      return null;
+    }
   }
 
   public static Matrix cut(Matrix a, int rows, int cols) {
@@ -437,6 +474,9 @@ final public class Matrix implements Serializable {
 
   // test client
   public static void main(String[] args) {
+    Matrix P = Matrix.readMatrixFromFile("matrixA.txt");
+    P.show("P");
+
     double[][] d = { { 1, 2, 3, 3 }, { 4, 5, 6, 3 }, { 9, 1, 3, 4 }, { 1, 2, 3, 4 } };
     Matrix D = new Matrix(d);
     Matrix Q = D.quarterify(0);

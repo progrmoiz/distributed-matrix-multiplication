@@ -78,7 +78,7 @@ public class Manager {
         isConnected = false;
       }
     }
-  
+
     return isConnected;
   }
 
@@ -130,14 +130,13 @@ public class Manager {
     }
   }
 
-
   /**
    * This is our manager job handler.
    * 1. Send a input to the worker
    * 2. Let the worker handle the job
    * 3. Receive a output from the worker
    *
-   * @param Socket    clientSocket - The socket to the worker
+   * @param Socket     clientSocket - The socket to the worker
    * @param Matrix[][] chunk - The data to send to the worker
    *
    * @return Matrix - The data received from the worker
@@ -160,7 +159,6 @@ public class Manager {
     return result;
   }
 
-
   // Get all free servers
   private InetSocketAddress[] getFreeWorkers() {
     // Return empty array if no servers are free
@@ -175,29 +173,33 @@ public class Manager {
 
   /**
    * The following method arrangeTasks takes chunks of both matrices A and B,
-   * and the dimension of any of the matrix (since both are equal). Then it creates
+   * and the dimension of any of the matrix (since both are equal). Then it
+   * creates
    * number of workers by dividing number of elements in a matrix with number of
    * elements in each chunk. Then for each worker, it takes all the chunks from a
-   * specific row of  A and from a specific column of B. Those specific column and
+   * specific row of A and from a specific column of B. Those specific column and
    * row are selected based on the ordering of workers as follows:
    * [
-   *   worker#1, worker#2, worker#3, worker#4,
-   *   worker#5, worker#6, worker#7, worker#8,
-   *   worker#9, worker#10, worker#11, worker#12,
-   *   worker#13, worker#14, worker#15, worker16,
+   * worker#1, worker#2, worker#3, worker#4,
+   * worker#5, worker#6, worker#7, worker#8,
+   * worker#9, worker#10, worker#11, worker#12,
+   * worker#13, worker#14, worker#15, worker16,
    * ]
-   * So, the row from A must be the row number in which the specific worker number lies
-   * and the column from B must be column number in which the specific worker number
+   * So, the row from A must be the row number in which the specific worker number
+   * lies
+   * and the column from B must be column number in which the specific worker
+   * number
    * lies.
    *
    * After selecting chunks from A and B, the function stores them in an array for
-   * each worker. It stores all such arrays, representing the task the workers, in an
+   * each worker. It stores all such arrays, representing the task the workers, in
+   * an
    * array with the length equal to the number of workers.
    */
   public static Matrix[][][] arrangeTasks(Matrix[] aChunks, Matrix[] bChunks, int dimensionOfMatrix) {
-    int chunkSize = aChunks[0].getM(); //keep in mind that this is dimension of chunk
+    int chunkSize = aChunks[0].getM(); // keep in mind that this is dimension of chunk
     int elementsInChunks = (int) Math.pow(chunkSize, 2);
-    int numWorkers = (int) Math.pow(dimensionOfMatrix, 2) / elementsInChunks; //8*8 = num elements in each matrix
+    int numWorkers = (int) Math.pow(dimensionOfMatrix, 2) / elementsInChunks; // 8*8 = num elements in each matrix
     int gameChanger = (int) Math.sqrt(numWorkers);
 
     Matrix[][][] resultMatrices = new Matrix[numWorkers][2][gameChanger];
@@ -270,14 +272,14 @@ public class Manager {
         int chunkSize = (int) Math.sqrt(Math.pow(matrixA.getM(), 2) / partitionSize);
 
         // MatrixAChunks[
-        //   Matrix[
-        //    1  2 <- ChunkSize = 2
-        //    3  4
-        //   ],
-        //   Matrix[
-        //    5  6
-        //    7  8
-        //   ]
+        // Matrix[
+        // 1 2 <- ChunkSize = 2
+        // 3 4
+        // ],
+        // Matrix[
+        // 5 6
+        // 7 8
+        // ]
         // ]
         Matrix[] matrixAChunks = matrixA.divide(chunkSize);
         Matrix[] matrixBChunks = matrixB.divide(chunkSize);
@@ -334,13 +336,14 @@ public class Manager {
               Thread thread = new Thread(() -> {
                 try {
                   // Log chunk index
-                  LOGGER.info("Sending chunk " + chunkIndexFinal + " to worker " + Helper.inetSocketAddressToString(workerAddress));
+                  LOGGER.info("Sending chunk " + chunkIndexFinal + " to worker "
+                      + Helper.inetSocketAddressToString(workerAddress));
 
                   // Create a new socket
                   Socket workerClientSocket = new Socket(workerAddress.getHostName(), workerAddress.getPort());
                   LOGGER.info("Connected to " + Helper.inetSocketAddressToString(workerAddress));
 
-                   // Send the chunk to the server
+                  // Send the chunk to the server
                   Matrix result = job(workerClientSocket, chunks[chunkIndexFinal]);
                   LOGGER.info("Received result from worker " + Helper.inetSocketAddressToString(workerAddress));
 
@@ -419,15 +422,15 @@ public class Manager {
   public static void main(String[] args) {
     Manager manager = new Manager((int) Math.pow(4, 1));
     manager.addWorker(new InetSocketAddress("localhost", 9001));
-    manager.addWorker(new InetSocketAddress("localhost", 9002));
+    manager.addWorker(new InetSocketAddress("192.168.1.106", 9002));
     // manager.addWorker(new InetSocketAddress("localhost", 9003));
 
     // if (manager.checkWorkersConnection()) {
-    //   LOGGER.info("All workers are connected");
+    // LOGGER.info("All workers are connected");
     // } else {
-    //   LOGGER.severe("Not all workers are connected");
-    //   LOGGER.severe("Exiting...");
-    //   return;
+    // LOGGER.severe("Not all workers are connected");
+    // LOGGER.severe("Exiting...");
+    // return;
     // }
 
     manager.start(6666);
