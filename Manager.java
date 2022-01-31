@@ -65,6 +65,23 @@ public class Manager {
     this.partitionSize = 4;
   }
 
+  public boolean checkWorkersConnection() {
+    boolean isConnected = true;
+
+    // Check if all workers are open set to true
+    for (InetSocketAddress workerAddress : workerAddresses) {
+      Socket socket = new Socket();
+      try {
+        socket.connect(workerAddress);
+        socket.close();
+      } catch (IOException e) {
+        isConnected = false;
+      }
+    }
+  
+    return isConnected;
+  }
+
   /**
    * Start a server socket and wait for a connection.
    *
@@ -400,6 +417,15 @@ public class Manager {
     manager.addWorker(new InetSocketAddress("localhost", 9001));
     manager.addWorker(new InetSocketAddress("localhost", 9002));
     // manager.addWorker(new InetSocketAddress("localhost", 9003));
+
+    // if (manager.checkWorkersConnection()) {
+    //   LOGGER.info("All workers are connected");
+    // } else {
+    //   LOGGER.severe("Not all workers are connected");
+    //   LOGGER.severe("Exiting...");
+    //   return;
+    // }
+
     manager.start(6666);
   }
 }

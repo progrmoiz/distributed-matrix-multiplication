@@ -61,22 +61,6 @@ public class Worker {
       this.clientSocket = clientSocket;
     }
 
-    public static Integer[] compute(Integer[] ints, int n) {
-      LOGGER.info("Computing...");
-
-      for (int i = 0; i < ints.length; i++) {
-        ints[i] += n;
-      }
-      // wait for a second
-      // try {
-      // LOGGER.info("computing");
-      // Thread.sleep(10000);
-      // } catch (InterruptedException e) {
-      // e.printStackTrace();
-      // }
-      return ints;
-    }
-
     public void run() {
       try {
         outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
@@ -85,14 +69,12 @@ public class Worker {
         Matrix[][] data = (Matrix[][]) inputStream.readObject();
         Matrix[] matrixAChunks = data[0];
         Matrix[] matrixBChunks = data[1];
+        LOGGER.info("Received data from " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
 
+        LOGGER.info("Starting computation...");
         Matrix result = Matrix.dot(matrixAChunks, matrixBChunks);
 
-        System.err.println("Computed data::: ");
-        result.show();
-
-        // Integer[] result = compute(data, 1);
-        // LOGGER.info("Computed data: " + Arrays.toString(result));
+        result.show("Computed result");
 
         outputStream.writeObject(result);
         outputStream.flush();
@@ -102,11 +84,10 @@ public class Worker {
         clientSocket.close();
 
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        LOGGER.info("Connection failed");
+        // e.printStackTrace();
       } catch (ClassNotFoundException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        // e.printStackTrace();
       }
     }
   }

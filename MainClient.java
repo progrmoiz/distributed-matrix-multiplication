@@ -13,19 +13,12 @@ public class MainClient {
   // Logger for this class
   private static final Logger LOGGER = Logger.getLogger(Manager.class.getName());
 
-  public void startConnection(String ip, int port) {
-    try {
-      clientSocket = new Socket(ip, port);
-      LOGGER.info("Connected to " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
+  public void startConnection(String ip, int port) throws IOException {
+    clientSocket = new Socket(ip, port);
+    LOGGER.info("Connected to " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
 
-      outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-      inputStream = new ObjectInputStream(clientSocket.getInputStream());
-    } catch (IOException e) {
-      LOGGER.severe("Connection failed");
-      e.printStackTrace();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+    inputStream = new ObjectInputStream(clientSocket.getInputStream());
   }
 
   public Matrix receiveData() {
@@ -82,27 +75,32 @@ public class MainClient {
     // int port = Integer.parseInt(args[1]);
 
     // if (args.length != 2) {
-    //   System.out.println("Usage: java MainClient <host> <port>");
-    //   System.exit(1);
+    // System.out.println("Usage: java MainClient <host> <port>");
+    // System.exit(1);
     // }
 
     // if (port == 0) {
-    //   System.out.println("Usage: java MainClient <host> <port>");
-    //   System.exit(1);
+    // System.out.println("Usage: java MainClient <host> <port>");
+    // System.exit(1);
     // }
 
-    MainClient mainClient = new MainClient();
-    mainClient.startConnection("localhost", 6666);
-    LOGGER.info("Sending matrices to manager...");
-    matrixA.show("A");
-    matrixB.show("B");
-    mainClient.sendData(matrices);
+    try {
+      MainClient mainClient = new MainClient();
+      mainClient.startConnection("localhost", 6666);
+      LOGGER.info("Sending matrices to manager...");
+      matrixA.show("A");
+      matrixB.show("B");
+      mainClient.sendData(matrices);
 
-    // receive data
-    Matrix receivedData = mainClient.receiveData();
-    LOGGER.info("Received final output from manager.");
-    receivedData.show("A x B");
+      // receive data
+      Matrix receivedData = mainClient.receiveData();
+      LOGGER.info("Received final output from manager.");
+      receivedData.show("A x B");
 
-    mainClient.stopConnection();
+      mainClient.stopConnection();
+    } catch (IOException e) {
+      LOGGER.severe("Connection failed");
+      LOGGER.severe("Exiting...");
+    }
   }
 }
