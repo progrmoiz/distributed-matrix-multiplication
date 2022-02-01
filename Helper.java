@@ -1,5 +1,6 @@
 import java.net.InetSocketAddress;
 import java.awt.Point;
+import java.util.List;
 
 public class Helper {
   /**
@@ -24,5 +25,16 @@ public class Helper {
   // Method to convert Point x, y to single dimensional array index
   public static int convertToIndex(int x, int y, int n) {
     return y * n + x;
+  }
+
+  public static void waitForThreads(List<Thread> threads) {
+    threads.forEach(thread -> {
+      try {
+        thread.join();
+      } catch (InterruptedException ex) {
+        ex.printStackTrace();
+      }
+    });
+    threads.clear();
   }
 }

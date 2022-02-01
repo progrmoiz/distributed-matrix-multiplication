@@ -67,6 +67,13 @@ public class MainClient {
     Matrix matrixA = Matrix.random(100, 100);
     Matrix matrixB = Matrix.random(100, 100);
 
+    for (int i = 0; i < 100; i++) {
+      for (int j = 0; j < 100; j++) {
+        matrixA.set(i, j, 5);
+        matrixB.set(i, j, 5);
+      }
+    }
+
     Matrix[] matrices = { matrixA, matrixB };
 
     // Get host and port from command line
@@ -86,9 +93,9 @@ public class MainClient {
     try {
       MainClient mainClient = new MainClient();
       mainClient.startConnection("localhost", 6666);
-      LOGGER.info("Sending matrices to manager...");
-      matrixA.show("A");
-      matrixB.show("B");
+      LOGGER.info("Sending following matrices to manager...");
+      // matrixA.show("A");
+      // matrixB.show("B");
       mainClient.sendData(matrices);
 
       // receive data
