@@ -3,7 +3,7 @@
 This project shows how to use the distributed system to perform some computations, in our case, we will use the matrix multiplication.
 
 ## Artitecture diagram
-![Distributed Matrix Multiplication Artitecture](/images/artitecture.png)
+![Distributed Matrix Multiplication Artitecture](/images/artitecture.jpg)
 
 
 ## How it's working?
