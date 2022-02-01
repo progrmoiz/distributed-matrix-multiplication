@@ -31,7 +31,7 @@ $ javac Worker.java
 $ java Worker 9001
 ```
 
-You can run as many workers as you like and Workers can be run on the same network or on different network.
+You can run as many workers as you like and workers can be run on the same network or on different network.
 
 > In the case of different network, you can also use Ngrok to expose the port.
 
