@@ -6,7 +6,7 @@ This project shows how to use the distributed system to perform some computation
 ![Distributed Matrix Multiplication Artitecture](/images/artitecture.jpg)
 
 
-## How it's working?
+## How does it work?
 
 So, we have three roles:
 
