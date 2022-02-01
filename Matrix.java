@@ -35,6 +35,16 @@ final public class Matrix implements Serializable {
     return N;
   }
 
+  // set data
+  public void set(int i, int j, double value) {
+    data[i][j] = value;
+  }
+
+  // get data
+  public double get(int i, int j) {
+    return data[i][j];
+  }
+
   // create matrix based on 2d array
   public Matrix(double[][] data) {
     M = data.length;
@@ -90,6 +100,16 @@ final public class Matrix implements Serializable {
       for (int j = 0; j < N; j++)
         A.data[j][i] = this.data[i][j];
     return A;
+  }
+
+  // return C = A + B
+  public void plusInPlace(Matrix B) {
+    if (B.M != M || B.N != N)
+      throw new RuntimeException("Illegal matrix dimensions.");
+
+    for (int i = 0; i < M; i++)
+      for (int j = 0; j < N; j++)
+        data[i][j] += + B.data[i][j];
   }
 
   // return C = A + B
@@ -357,7 +377,7 @@ final public class Matrix implements Serializable {
     return C;
   }
 
-  public static Matrix dot(Matrix[] A, Matrix[] B) {
+  public static Matrix dot(Matrix[] A, Matrix[] B) { // 10 chunks example in A and B so create 10 threads
     Matrix result = new Matrix(A[0].getM(), A[0].getN());
 
     for (int i = 0; i < A.length; i++) {

@@ -64,8 +64,15 @@ public class MainClient {
   }
 
   public static void main(String[] args) {
-    Matrix matrixA = Matrix.random(100, 100);
-    Matrix matrixB = Matrix.random(100, 100);
+    Matrix matrixA = Matrix.random(8, 8);
+    Matrix matrixB = Matrix.random(8, 8);
+
+    for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      matrixA.set(i,j,4);
+      matrixB.set(i,j,4);
+    }
+    }
 
     Matrix[] matrices = { matrixA, matrixB };
 
@@ -86,9 +93,9 @@ public class MainClient {
     try {
       MainClient mainClient = new MainClient();
       mainClient.startConnection("localhost", 6666);
-      LOGGER.info("Sending matrices to manager...");
-      matrixA.show("A");
-      matrixB.show("B");
+      LOGGER.info("Sending following matrices to manager...");
+      // matrixA.show("A");
+      // matrixB.show("B");
       mainClient.sendData(matrices);
 
       // receive data
