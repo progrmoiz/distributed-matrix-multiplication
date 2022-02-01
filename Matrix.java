@@ -45,6 +45,20 @@ final public class Matrix implements Serializable {
     return data[i][j];
   }
 
+  // get row
+  public double[] getRow(int i) {
+    return data[i];
+  }
+
+  // get column
+  public double[] getColumn(int j) {
+    double[] column = new double[M];
+    for (int i = 0; i < M; i++) {
+      column[i] = data[i][j];
+    }
+    return column;
+  }
+
   // create matrix based on 2d array
   public Matrix(double[][] data) {
     M = data.length;
@@ -109,7 +123,7 @@ final public class Matrix implements Serializable {
 
     for (int i = 0; i < M; i++)
       for (int j = 0; j < N; j++)
-        data[i][j] += + B.data[i][j];
+        data[i][j] += +B.data[i][j];
   }
 
   // return C = A + B

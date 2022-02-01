@@ -64,14 +64,14 @@ public class MainClient {
   }
 
   public static void main(String[] args) {
-    Matrix matrixA = Matrix.random(8, 8);
-    Matrix matrixB = Matrix.random(8, 8);
+    Matrix matrixA = Matrix.random(100, 100);
+    Matrix matrixB = Matrix.random(100, 100);
 
-    for (int i = 0; i < 8; i++) {
-    for (int j = 0; j < 8; j++) {
-      matrixA.set(i,j,4);
-      matrixB.set(i,j,4);
-    }
+    for (int i = 0; i < 100; i++) {
+      for (int j = 0; j < 100; j++) {
+        matrixA.set(i, j, 5);
+        matrixB.set(i, j, 5);
+      }
     }
 
     Matrix[] matrices = { matrixA, matrixB };
