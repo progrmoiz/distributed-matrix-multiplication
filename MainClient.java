@@ -12,6 +12,12 @@ public class MainClient {
   // Logger for this class
   private static final Logger LOGGER = Logger.getLogger(Manager.class.getName());
 
+  /**
+   * Create a socket connection to the server
+   *
+   * @param ip   The IP address of the server.
+   * @param port The port to connect to.
+   */
   public void startConnection(String ip, int port) throws IOException {
     clientSocket = new Socket(ip, port);
     LOGGER.info("Connected to " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
@@ -20,6 +26,11 @@ public class MainClient {
     inputStream = new ObjectInputStream(clientSocket.getInputStream());
   }
 
+  /**
+   * It reads the data from the input stream and returns it as a matrix
+   *
+   * @return Nothing is being returned.
+   */
   public Matrix receiveData() {
     try {
       return (Matrix) inputStream.readObject();
@@ -36,6 +47,11 @@ public class MainClient {
     return null;
   }
 
+  /**
+   * Send the data to the server
+   *
+   * @param data The data to send.
+   */
   public void sendData(Matrix[] data) {
     try {
       outputStream.writeObject(data);
@@ -49,6 +65,9 @@ public class MainClient {
     }
   }
 
+  /**
+   * It closes the connection.
+   */
   public void stopConnection() {
     try {
       inputStream.close();
