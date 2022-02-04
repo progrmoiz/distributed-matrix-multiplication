@@ -46,12 +46,19 @@ public class Manager {
   private int partitionSize;
 
   // Add to workerAddresses
+  /**
+   * Add a worker to the list of workers
+   *
+   * @param workerAddress The address of the worker.
+   */
   public void addWorker(InetSocketAddress workerAddress) {
     workerAddresses = Arrays.copyOf(workerAddresses, workerAddresses.length + 1);
     workerAddresses[workerAddresses.length - 1] = workerAddress;
   }
 
   // Manager constructor
+  // The constructor takes a partition size and throws an exception if it's not a
+  // power of 4.
   public Manager(int partitionSize) {
     // partitionSize must be a power of 4
     if (partitionSize < 4 || (partitionSize & (partitionSize - 1)) != 0) {
@@ -61,10 +68,16 @@ public class Manager {
     this.partitionSize = partitionSize;
   }
 
+  // The above code is creating a new Manager object.
   public Manager() {
     this.partitionSize = 4;
   }
 
+  /**
+   * Check if all workers are connected to the master
+   *
+   * @return The method returns a boolean value.
+   */
   public boolean checkWorkersConnection() {
     boolean isConnected = true;
 
@@ -82,6 +95,8 @@ public class Manager {
     return isConnected;
   }
 
+  // The ManagerClientHandler class is a thread that handles a client
+  // connection. It creates a new thread for each client connection.
   /**
    * Start a server socket and wait for a connection.
    *
@@ -119,6 +134,9 @@ public class Manager {
     }
   }
 
+  /**
+   * It closes the server socket.
+   */
   public void stop() {
     try {
       serverSocket.close();
@@ -130,6 +148,9 @@ public class Manager {
     }
   }
 
+  // We create a socket to the worker, send the chunk to the worker, receive the
+  // result from the
+  // worker, and close the socket.
   /**
    * This is our manager job handler.
    * 1. Send a input to the worker
@@ -196,6 +217,24 @@ public class Manager {
    * an
    * array with the length equal to the number of workers.
    */
+  /**
+   * Given a set of chunks of A and B, and the dimension of the matrix,
+   * this function will return a set of chunks of A and B that will be fed to each
+   * worker
+   * Given a set of matrices, this function will divide them into chunks and
+   * assign each chunk to a
+   * worker
+   *
+   * @param aChunks           an array of matrices that represent the chunks of
+   *                          the first matrix
+   * @param bChunks           the chunks of the B matrix
+   * @param dimensionOfMatrix the dimension of the matrix.
+   * @return The resultMatrices is a 3D array of matrices. The first dimension is
+   *         the worker number.
+   *         The second dimension is the matrix that the worker is working on. The
+   *         third dimension is the chunk
+   *         of the matrix that the worker is working on.
+   */
   public static Matrix[][][] arrangeTasks(Matrix[] aChunks, Matrix[] bChunks, int dimensionOfMatrix) {
     int chunkSize = aChunks[0].getM(); // keep in mind that this is dimension of chunk
     int elementsInChunks = (int) Math.pow(chunkSize, 2);
@@ -247,10 +286,15 @@ public class Manager {
     private ObjectOutputStream outputStream;
     private ObjectInputStream inputStream;
 
+    // Creating a new ManagerClientHandler object and passing the clientSocket to
+    // it.
     public ManagerClientHandler(Socket clientSocket) {
       this.clientSocket = clientSocket;
     }
 
+    // We divide the matrices into chunks, send the chunks to the servers, and merge
+    // the results from
+    // the servers.
     public void run() {
       try {
         outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
