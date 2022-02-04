@@ -21,6 +21,11 @@ public class Worker {
    *
    * @param port the port number to listen on
    */
+  /**
+   * Accept a client connection and create a new thread for it
+   *
+   * @param port The port number to which the server socket is bound.
+   */
   public void start(int port) {
     try {
       // Create a server socket
@@ -46,6 +51,9 @@ public class Worker {
     }
   }
 
+  /**
+   * It creates a server socket and listens for incoming connections
+   */
   public void stop() {
     try {
       serverSocket.close();
@@ -73,6 +81,12 @@ public class Worker {
       private Matrix result;
       private int row;
 
+      // The RowMultiply class is a subclass of Thread.
+      // It has three instance variables: result, mat1, and mat2.
+      // It has one constructor that takes four parameters: result, mat1, mat2, and
+      // row.
+      // The constructor initializes the three instance variables to the values of the
+      // four parameters.
       public RowMultiply(Matrix result, Matrix mat1, Matrix mat2, int row) {
         this.result = result;
         this.mat1 = mat1;
@@ -80,6 +94,8 @@ public class Worker {
         this.row = row;
       }
 
+      // For each row in mat1, multiply that row by mat2 and store the result in
+      // result.
       @Override
       public void run() {
         for (int i = 0; i < mat2.getN(); i++) {
@@ -100,6 +116,9 @@ public class Worker {
       private int threshold;
       private int bigThreshold;
 
+      // The constructor takes in the final result matrix, the two matrices that will
+      // be multiplied,
+      // and a threshold value.
       public DotProduct(Matrix finalResult, Matrix mat1, Matrix mat2) {
         this.finalResult = finalResult;
         this.mat1 = mat1;
@@ -109,6 +128,18 @@ public class Worker {
 
       }
 
+      // The `RowMultiply` class is a thread that multiplies a row of `mat1` by a row
+      // of `mat2` and adds
+      // it to `finalResult`.
+      //
+      // The `run` method of the `RowMultiply` class creates a new thread and starts
+      // it.
+      //
+      // The `run` method also adds the thread to a list of threads.
+      //
+      // The `run` method checks if the number of threads is greater than 50.
+      //
+      // If it is, it waits for the threads to finish.
       @Override
       public void run() {
         List<Thread> threads = new ArrayList<>();
@@ -149,6 +180,14 @@ public class Worker {
 
     public static class ThreadCreation {
 
+      /**
+       * Given two matrices, create a thread for each matrix and run the dot product
+       * on each thread
+       *
+       * @param mat1        The first matrix to be multiplied.
+       * @param mat2        The matrix that is being multiplied by mat1.
+       * @param finalResult the result matrix
+       */
       public static void multiply(Matrix[] mat1, Matrix[] mat2, Matrix finalResult) {
         List<Thread> threads = new ArrayList<>();
 
@@ -189,6 +228,7 @@ public class Worker {
         outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
         inputStream = new ObjectInputStream(clientSocket.getInputStream());
 
+        // Read the input stream into a 2D array of matrices.
         Matrix[][] data = (Matrix[][]) inputStream.readObject();
         Matrix[] matrixAChunks = data[0];
         Matrix[] matrixBChunks = data[1];
@@ -203,9 +243,11 @@ public class Worker {
 
         if (rowsInChunk < 2) { // Let's check if we have 30 chunks in each row and in each column
           LOGGER.info("Calling matrix multiplication without threads. Give a bigger challenge to use threads. :p");
+          // Doing matrix multiplication.
           result = Matrix.dot(matrixAChunks, matrixBChunks);
         } else {
           LOGGER.info("Invoking threaded multiplication...");
+          // The code is creating threads to multiply matrices.
           ThreadCreation.multiply(matrixAChunks, matrixBChunks, result);
         }
 
