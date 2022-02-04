@@ -12,6 +12,9 @@ import java.util.logging.Logger;
  * https://introcs.cs.princeton.edu/java/95linear/Matrix.java.html
  ******************************************************************************/
 
+/**
+ * Creating a class called Matrix.
+ */
 final public class Matrix implements Serializable {
   private final int M; // number of rows
   private final int N; // number of columns
@@ -21,36 +24,75 @@ final public class Matrix implements Serializable {
   private static final Logger LOGGER = Logger.getLogger(Matrix.class.getName());
 
   // create M-by-N matrix of 0's
+// Creating a new Matrix object with M rows and N columns.
   public Matrix(int M, int N) {
     this.M = M;
     this.N = N;
     data = new double[M][N];
   }
 
+/**
+ * Returns the number of rows in the matrix
+ *
+ * @return The value of the instance variable M.
+ */
   public int getM() {
     return M;
   }
 
+ /**
+  * Returns the number of elements in the array
+  *
+  * @return The number of elements in the array.
+  */
   public int getN() {
     return N;
   }
 
   // set data
+ /**
+  * Given an integer i and an integer j, set the value of the element at the i-th row and j-th column
+  * of the matrix to value
+  *
+  * @param i The row of the matrix.
+  * @param j The column index of the element to be set.
+  * @param value the value to set the cell to
+  */
   public void set(int i, int j, double value) {
     data[i][j] = value;
   }
 
   // get data
+  /**
+   * Given an integer i and an integer j, return the value of the element at the ith row and jth column
+   * of the matrix
+   *
+   * @param i The row of the matrix.
+   * @param j the column index
+   * @return The value of the element at the specified indices.
+   */
   public double get(int i, int j) {
     return data[i][j];
   }
 
   // get row
+ /**
+  * Given an index, return the row of the matrix
+  *
+  * @param i The row index.
+  * @return The row of data.
+  */
   public double[] getRow(int i) {
     return data[i];
   }
 
   // get column
+/**
+ * Return a new array that contains the elements of the jth column of the matrix
+ *
+ * @param j the column index
+ * @return A new array of doubles.
+ */
   public double[] getColumn(int j) {
     double[] column = new double[M];
     for (int i = 0; i < M; i++) {
@@ -60,6 +102,8 @@ final public class Matrix implements Serializable {
   }
 
   // create matrix based on 2d array
+// The constructor takes a double[][] as an argument and creates a new double[][] that is a copy of the
+// argument.
   public Matrix(double[][] data) {
     M = data.length;
     N = data[0].length;
@@ -70,11 +114,19 @@ final public class Matrix implements Serializable {
   }
 
   // copy constructor
+ // Creating a new Matrix object with the same data as the Matrix A.
   private Matrix(Matrix A) {
     this(A.data);
   }
 
   // create and return a random M-by-N matrix with values between 0 and 1
+ /**
+  * Generate a random matrix of size M by N
+  *
+  * @param M the number of rows in the matrix
+  * @param N the number of rows in the matrix
+  * @return A new Matrix object.
+  */
   public static Matrix random(int M, int N) {
     Matrix A = new Matrix(M, N);
     for (int i = 0; i < M; i++)
@@ -84,6 +136,15 @@ final public class Matrix implements Serializable {
   }
 
   // create and return a random M-by-N matrix with values between min and max
+  /**
+   * Generate a random matrix with elements in the range [min, max]
+   *
+   * @param M the number of rows in the matrix
+   * @param N the number of rows in the matrix
+   * @param min the minimum value of the random numbers
+   * @param max The maximum value of the random numbers.
+   * @return A new matrix object.
+   */
   public static Matrix random(int M, int N, double min, double max) {
     Matrix A = new Matrix(M, N);
     for (int i = 0; i < M; i++)
@@ -93,6 +154,12 @@ final public class Matrix implements Serializable {
   }
 
   // create and return the N-by-N identity matrix
+/**
+ * Create a NxN matrix with the diagonal elements set to 1
+ *
+ * @param N the size of the matrix
+ * @return A new Matrix object.
+ */
   public static Matrix identity(int N) {
     Matrix I = new Matrix(N, N);
     for (int i = 0; i < N; i++)
@@ -101,6 +168,12 @@ final public class Matrix implements Serializable {
   }
 
   // swap rows i and j
+/**
+ * Swap the values of the data array at indices i and j
+ *
+ * @param i The index of the first element to swap.
+ * @param j The index of the element to swap with.
+ */
   private void swap(int i, int j) {
     double[] temp = data[i];
     data[i] = data[j];
@@ -108,6 +181,11 @@ final public class Matrix implements Serializable {
   }
 
   // create and return the transpose of the invoking matrix
+/**
+ * Transpose() returns a new matrix that is the transpose of this matrix
+ *
+ * @return A new matrix.
+ */
   public Matrix transpose() {
     Matrix A = new Matrix(N, M);
     for (int i = 0; i < M; i++)
@@ -117,6 +195,11 @@ final public class Matrix implements Serializable {
   }
 
   // return C = A + B
+ /**
+  * Add the elements of matrix B to the elements of matrix A
+  *
+  * @param B the matrix to be added to this matrix
+  */
   public void plusInPlace(Matrix B) {
     if (B.M != M || B.N != N)
       throw new RuntimeException("Illegal matrix dimensions.");
@@ -127,6 +210,12 @@ final public class Matrix implements Serializable {
   }
 
   // return C = A + B
+/**
+ * Add two matrices together
+ *
+ * @param B the matrix to be added to A
+ * @return A new matrix C.
+ */
   public Matrix plus(Matrix B) {
     Matrix A = this;
     if (B.M != A.M || B.N != A.N)
@@ -139,6 +228,12 @@ final public class Matrix implements Serializable {
   }
 
   // return C = A - B
+/**
+ * Subtracts the matrix B from the matrix A and returns the result in matrix C
+ *
+ * @param B The matrix to subtract from this matrix.
+ * @return A new matrix C.
+ */
   public Matrix minus(Matrix B) {
     Matrix A = this;
     if (B.M != A.M || B.N != A.N)
@@ -151,6 +246,12 @@ final public class Matrix implements Serializable {
   }
 
   // does A = B exactly?
+/**
+ * If the matrices are equal, return true, otherwise return false
+ *
+ * @param B the matrix to compare to A
+ * @return A boolean value.
+ */
   public boolean eq(Matrix B) {
     Matrix A = this;
     if (B.M != A.M || B.N != A.N)
@@ -162,6 +263,12 @@ final public class Matrix implements Serializable {
     return true;
   }
 
+/**
+ * Given a matrix, return a new matrix that is the given matrix divided into quarters
+ *
+ * @param index 0, 1, 2, or 3
+ * @return A matrix that is a quarter of the original matrix.
+ */
   public Matrix quarterify(int index) {
     // Assuming this is a quarter matrix and M and N are both even or specifically
     // M and N should be equal and should be a power of 2
@@ -189,10 +296,24 @@ final public class Matrix implements Serializable {
   }
 
   /* Function to check if x is power of 2 */
+/**
+ * Given a number, return true if it is a power of two, else return false
+ *
+ * @param n The number to check if it's a power of two.
+ * @return The return value is a boolean value.
+ */
   static boolean isPowerOfTwo(int n) {
     return (int) (Math.ceil((Math.log(n) / Math.log(2)))) == (int) (Math.floor(((Math.log(n) / Math.log(2)))));
   }
 
+/**
+ * Given a matrix, cut it into a smaller matrix of a specified size
+ *
+ * @param a The matrix to be cut.
+ * @param rows The number of rows to cut out of the matrix.
+ * @param cols the number of columns to cut the matrix into
+ * @return The matrix that is cut from the original matrix.
+ */
   public static Matrix cut(Matrix a, int rows, int cols) {
     Matrix temp = new Matrix(rows, cols);
 
@@ -206,6 +327,15 @@ final public class Matrix implements Serializable {
   }
 
   // method to split parent matrix into child matrices
+ /**
+  * Given a matrix, split it into two matrices
+  *
+  * @param childMatrixLength the length of the child matrix.
+  * @param fromIndex The index of the first row of the matrix to be copied.
+  * @param toIndex The index of the last element in the row of the parent matrix that will be copied to
+  * the child matrix.
+  * @return The child matrix.
+  */
   public Matrix split(int childMatrixLength, int fromIndex, int toIndex) {
     Matrix child = new Matrix(childMatrixLength, childMatrixLength);
 
@@ -218,6 +348,12 @@ final public class Matrix implements Serializable {
 
   // Use the divide strategy to split the matrix into n parts and return the array
   // of matrices
+/**
+ * Divide the matrix into smaller matrices of size childMatrixLength
+ *
+ * @param childMatrixLength The length of the child matrix.
+ * @return An array of matrices.
+ */
   public Matrix[] divide(int childMatrixLength) {
     // childMatrixLength should be less than or equal to M throw error
     if (childMatrixLength > M) {
@@ -243,6 +379,13 @@ final public class Matrix implements Serializable {
     return groups;
   }
 
+  /**
+   * Given a matrix P, join the matrix to the matrix at the given index
+   *
+   * @param P the matrix to be joined with this matrix
+   * @param fromIndex the index of the first row of the matrix to be joined.
+   * @param toIndex the index of the first element in the new matrix.
+   */
   public void join(Matrix P, int fromIndex, int toIndex) {
     for (int i1 = 0, i2 = fromIndex; i1 < P.getM(); i1++, i2++) {
       for (int j1 = 0, j2 = toIndex; j1 < P.getN(); j1++, j2++) {
@@ -251,6 +394,11 @@ final public class Matrix implements Serializable {
     }
   }
 
+/**
+ * Join all the matrices in the array into one matrix
+ *
+ * @param matrices an array of matrices to join
+ */
   public void joinAll(Matrix[] matrices) {
     int childMatrixLength = matrices[0].getM();
     int len = M / childMatrixLength;
@@ -263,6 +411,7 @@ final public class Matrix implements Serializable {
     }
   }
 
+  // Given a matrix, pad it with zeros until it is a power of 2.
   // Credit:
   // https://github.com/liangyue268/CPE-593/blob/00b590f46666f7bbf7a72af09dcb57d59f52c2d6/HW6/Strassen.java
   public static Matrix padding(Matrix a) {
@@ -289,6 +438,9 @@ final public class Matrix implements Serializable {
 
   // send it whichever quarter it is and then use it to apply the elements from
   // that matrix.
+  // For each of the four submatrices, copy the submatrix into the appropriate
+  // location in the original
+  // matrix.
   public static void resetMatrix(Matrix mtx, Matrix submtx, int index) {
 
     for (int i = 0; i < submtx.M; i++) {
@@ -311,6 +463,15 @@ final public class Matrix implements Serializable {
     }
   }
 
+  /**
+   * Given two square matrices, this function will return the product of the two
+   * matrices using the
+   * Strassen algorithm
+   *
+   * @param mtx1 The first matrix
+   * @param mtx2 The matrix that is being multiplied by mtx1
+   * @return The resultant matrix.
+   */
   public static Matrix strassen(Matrix mtx1, Matrix mtx2) {
     // Assuming that by the time the matrices come here, we have these square
     // matrices: So, M == N
@@ -379,6 +540,12 @@ final public class Matrix implements Serializable {
   }
 
   // return C = A * B
+  /**
+   * Multiply the matrix A by the matrix B, and store the result in the matrix C
+   *
+   * @param B the matrix to be multiplied
+   * @return The product of A and B.
+   */
   public Matrix times(Matrix B) {
     Matrix A = this;
     if (A.N != B.M)
@@ -391,6 +558,13 @@ final public class Matrix implements Serializable {
     return C;
   }
 
+  /**
+   * It computes the dot product of A and B.
+   *
+   * @param A an array of matrices
+   * @param B the matrix that is being multiplied
+   * @return The result of the matrix multiplication.
+   */
   public static Matrix dot(Matrix[] A, Matrix[] B) { // 10 chunks example in A and B so create 10 threads
     Matrix result = new Matrix(A[0].getM(), A[0].getN());
 
@@ -402,6 +576,13 @@ final public class Matrix implements Serializable {
   }
 
   // return x = A^-1 b, assuming A is square and has full rank
+  /**
+   * Given a matrix A and a vector b, solve for x in Ax = b
+   *
+   * @param rhs the right hand side of the equation, a matrix with as many rows as
+   *            the
+   * @return The solution matrix.
+   */
   public Matrix solve(Matrix rhs) {
     if (M != N || rhs.M != N || rhs.N != 1)
       throw new RuntimeException("Illegal matrix dimensions.");
@@ -451,7 +632,9 @@ final public class Matrix implements Serializable {
 
   }
 
-  // print matrix to standard output
+  /**
+   * Prints the matrix to the standard output
+   */
   public void show() {
     for (int i = 0; i < M; i++) {
       for (int j = 0; j < N; j++)
@@ -460,6 +643,11 @@ final public class Matrix implements Serializable {
     }
   }
 
+  /**
+   * Prints the matrix to the standard output
+   *
+   * @param msg The message to display.
+   */
   public void show(String msg) {
     System.out.println(msg + ":");
     for (int i = 0; i < M; i++) {
