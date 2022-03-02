@@ -3,8 +3,7 @@
 This project shows how to use the distributed system to perform some computations, in our case, we will use the matrix multiplication.
 
 ## Artitecture diagram
-![Distributed Matrix Multiplication Artitecture](/images/artitecture.jpg)
-
+![Distributed Matrix Multiplication Artitecture](/images/architecture.jpg)
 
 ## How does it work?
 
@@ -50,3 +49,36 @@ $ java Client
 ```
 
 Hurray! You can see the result in the console.
+
+## Performance
+We will be running the code with randomly generated inputs for matrix dimensions of 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192.
+
+We tested the performance with randomly generated inputs for matrix dimensions of 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192.
+
+We work out two examples:
+1. Single System
+2. Distributed System (three separate workers)
+
+### System specs:
+|     |     |
+| --- | --- |
+| **Processor** | Intel® Core™ i7-9700 CPU @ 3.00GHz × 8 |
+| **RAM** | 31.3 GiB |
+| **System type** | 64-bit Operating System, x64-based processor |
+
+### 1. Single System
+#### Result:
+![Performance outputs when using a single machine](/images/single-machine-performance.jpeg)
+
+### 2. Distributed System (three separate workers)
+Workers are running separate machines with the same system specs. We are using three workers for this test.
+
+#### Result:
+![Performance outputs when using distributed systems](/images/distributed-machine-performance.jpeg)
+
+### Final results
+Comparing single vs distributed in tabular data.
+![Comparing single vs distributed](/images/comparing-single-vs-distributed.jpeg)
+
+Single vs Distributed System comparison
+![Single vs Distributed System comparison](/images/single-vs-distributed-comparision.jpeg)
