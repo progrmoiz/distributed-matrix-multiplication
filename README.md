@@ -2,7 +2,7 @@
 
 This project shows how to use the distributed system to perform some computations, in our case, we will use the matrix multiplication.
 
-## Artitecture diagram
+## Architecture diagram
 ![Distributed Matrix Multiplication Artitecture](/images/architecture.jpg)
 
 ## How does it work?
