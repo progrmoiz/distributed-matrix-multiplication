@@ -1,6 +1,6 @@
 # Distributed Matrix Multiplication
 
-This project shows how to use the distributed system to perform some computations, in our case, we will use the matrix multiplication.
+This project presents a distributed system that can be used to perform computations. Using the matrix multiplication as an example, this project will demonstrate how a distributed system works.
 
 ## Architecture diagram
 ![Distributed Matrix Multiplication Architecture](/images/architecture.jpg)
