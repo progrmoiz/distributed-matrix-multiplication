@@ -49,7 +49,6 @@ final public class Matrix implements Serializable {
     return N;
   }
 
-  // set data
   /**
    * Given an integer i and an integer j, set the value of the element at the i-th
    * row and j-th column
@@ -63,7 +62,6 @@ final public class Matrix implements Serializable {
     data[i][j] = value;
   }
 
-  // get data
   /**
    * Given an integer i and an integer j, return the value of the element at the
    * ith row and jth column
@@ -77,7 +75,6 @@ final public class Matrix implements Serializable {
     return data[i][j];
   }
 
-  // get row
   /**
    * Given an index, return the row of the matrix
    *
@@ -88,7 +85,6 @@ final public class Matrix implements Serializable {
     return data[i];
   }
 
-  // get column
   /**
    * Return a new array that contains the elements of the jth column of the matrix
    *
@@ -103,10 +99,8 @@ final public class Matrix implements Serializable {
     return column;
   }
 
-  // create matrix based on 2d array
   // The constructor takes a double[][] as an argument and creates a new
-  // double[][] that is a copy of the
-  // argument.
+  // double[][] that is a copy of the argument.
   public Matrix(double[][] data) {
     M = data.length;
     N = data[0].length;
@@ -116,7 +110,6 @@ final public class Matrix implements Serializable {
         this.data[i][j] = data[i][j];
   }
 
-  // copy constructor
   // Creating a new Matrix object with the same data as the Matrix A.
   private Matrix(Matrix A) {
     this(A.data);
@@ -138,7 +131,6 @@ final public class Matrix implements Serializable {
     return A;
   }
 
-  // create and return a random M-by-N matrix with values between min and max
   /**
    * Generate a random matrix with elements in the range [min, max]
    *
@@ -156,7 +148,6 @@ final public class Matrix implements Serializable {
     return A;
   }
 
-  // create and return the N-by-N identity matrix
   /**
    * Create a NxN matrix with the diagonal elements set to 1
    *
@@ -170,7 +161,6 @@ final public class Matrix implements Serializable {
     return I;
   }
 
-  // swap rows i and j
   /**
    * Swap the values of the data array at indices i and j
    *
@@ -183,7 +173,6 @@ final public class Matrix implements Serializable {
     data[j] = temp;
   }
 
-  // create and return the transpose of the invoking matrix
   /**
    * Transpose() returns a new matrix that is the transpose of this matrix
    *
@@ -197,7 +186,6 @@ final public class Matrix implements Serializable {
     return A;
   }
 
-  // return C = A + B
   /**
    * Add the elements of matrix B to the elements of matrix A
    *
@@ -212,7 +200,6 @@ final public class Matrix implements Serializable {
         data[i][j] += +B.data[i][j];
   }
 
-  // return C = A + B
   /**
    * Add two matrices together
    *
@@ -230,7 +217,6 @@ final public class Matrix implements Serializable {
     return C;
   }
 
-  // return C = A - B
   /**
    * Subtracts the matrix B from the matrix A and returns the result in matrix C
    *
@@ -248,7 +234,6 @@ final public class Matrix implements Serializable {
     return C;
   }
 
-  // does A = B exactly?
   /**
    * If the matrices are equal, return true, otherwise return false
    *
@@ -266,40 +251,6 @@ final public class Matrix implements Serializable {
     return true;
   }
 
-  /**
-   * Given a matrix, return a new matrix that is the given matrix divided into
-   * quarters
-   *
-   * @param index 0, 1, 2, or 3
-   * @return A matrix that is a quarter of the original matrix.
-   */
-  public Matrix quarterify(int index) {
-    // Assuming this is a quarter matrix and M and N are both even or specifically
-    // M and N should be equal and should be a power of 2
-    int len = this.M / 2;
-    Matrix quarter = new Matrix(this.M / 2, this.N / 2);
-    for (int i = 0; i < len; i++) {
-      for (int j = 0; j < len; j++) {
-        switch (index) {
-          case 0:
-            quarter.data[i][j] = this.data[i][j];
-            break;
-          case 1:
-            quarter.data[i][j] = this.data[i][j + len];
-            break;
-          case 2:
-            quarter.data[i][j] = this.data[i + len][j];
-            break;
-          case 3:
-            quarter.data[i][j] = this.data[i + len][j + len];
-            break;
-        }
-      }
-    }
-    return quarter;
-  }
-
-  /* Function to check if x is power of 2 */
   /**
    * Given a number, return true if it is a power of two, else return false
    *
@@ -330,7 +281,6 @@ final public class Matrix implements Serializable {
     return temp;
   }
 
-  // method to split parent matrix into child matrices
   /**
    * Given a matrix, split it into two matrices
    *
@@ -352,8 +302,6 @@ final public class Matrix implements Serializable {
     return child;
   }
 
-  // Use the divide strategy to split the matrix into n parts and return the array
-  // of matrices
   /**
    * Divide the matrix into smaller matrices of size childMatrixLength
    *
@@ -442,11 +390,8 @@ final public class Matrix implements Serializable {
     return paddedMatrix;
   }
 
-  // send it whichever quarter it is and then use it to apply the elements from
-  // that matrix.
   // For each of the four submatrices, copy the submatrix into the appropriate
-  // location in the original
-  // matrix.
+  // location in the original matrix.
   public static void resetMatrix(Matrix mtx, Matrix submtx, int index) {
 
     for (int i = 0; i < submtx.M; i++) {
@@ -469,83 +414,6 @@ final public class Matrix implements Serializable {
     }
   }
 
-  /**
-   * Given two square matrices, this function will return the product of the two
-   * matrices using the
-   * Strassen algorithm
-   *
-   * @param mtx1 The first matrix
-   * @param mtx2 The matrix that is being multiplied by mtx1
-   * @return The resultant matrix.
-   */
-  public static Matrix strassen(Matrix mtx1, Matrix mtx2) {
-    // Assuming that by the time the matrices come here, we have these square
-    // matrices: So, M == N
-    int len = mtx1.M / 2;
-    Matrix resultantMatrix = new Matrix(mtx1.M, mtx1.N);
-
-    if (len == 0) {
-      resultantMatrix.data[0][0] = mtx1.data[0][0] * mtx2.data[0][0];
-    } else {
-      for (int i = 0; i < mtx1.M; i++) {
-        for (int j = 0; j < mtx2.N; j++) {
-          resultantMatrix.data[i][j] = 0;
-        }
-      }
-
-      Matrix a1 = mtx1.quarterify(0);
-      Matrix a2 = mtx1.quarterify(1);
-      Matrix a3 = mtx1.quarterify(2);
-      Matrix a4 = mtx1.quarterify(3);
-      Matrix b1 = mtx2.quarterify(0);
-      Matrix b2 = mtx2.quarterify(1);
-      Matrix b3 = mtx2.quarterify(2);
-      Matrix b4 = mtx2.quarterify(3);
-
-      Matrix m1 = Matrix.strassen(a1, b2.minus(b4));
-      Matrix m2 = Matrix.strassen(a1.plus(a2), b4);
-      Matrix m3 = Matrix.strassen(a3.plus(a4), b1);
-      Matrix m4 = Matrix.strassen(a4, b3.minus(b1));
-      Matrix m5 = Matrix.strassen(a1.plus(a4), b1.plus(b4));
-      Matrix m6 = Matrix.strassen(a2.minus(a4), b3.plus(b4));
-      Matrix m7 = Matrix.strassen(a1.minus(a3), b1.plus(b2));
-
-      // create the four new quadrants of the resultantMatrix.
-      /**
-       * Q1 = M5 + M4 - M2 + M6
-       * Q2 = M1 + M2
-       * Q3 = M3 + M4
-       * Q4 = M1 + M5 - M3 - M7
-       **/
-
-      Matrix Q1 = ((m5.plus(m4)).minus(m2)).plus(m6);
-      Matrix Q2 = m1.plus(m2);
-      Matrix Q3 = m3.plus(m4);
-      Matrix Q4 = ((m1.plus(m5)).minus(m3)).minus(m7);
-
-      resetMatrix(resultantMatrix, Q1, 0);
-      resetMatrix(resultantMatrix, Q2, 1);
-      resetMatrix(resultantMatrix, Q3, 2);
-      resetMatrix(resultantMatrix, Q4, 3);
-
-    }
-
-    return resultantMatrix;
-  }
-
-  // if n is odd,we fill remaining rows and columns with zeros to make it even
-  // order matrix
-  public Matrix fillZeros(int n) {
-    Matrix A = new Matrix(n, n);
-    for (int i = 0; i < n; i++) {
-      for (int j = 0; j < n; j++) {
-        A.data[i][j] = data[i][j];
-      }
-    }
-    return A;
-  }
-
-  // return C = A * B
   /**
    * Multiply the matrix A by the matrix B, and store the result in the matrix C
    *
@@ -581,7 +449,6 @@ final public class Matrix implements Serializable {
     return result;
   }
 
-  // return x = A^-1 b, assuming A is square and has full rank
   /**
    * Given a matrix A and a vector b, solve for x in Ax = b
    *
@@ -665,421 +532,5 @@ final public class Matrix implements Serializable {
 
   // test client
   public static void main(String[] args) {
-    double[][] d = { { 1, 2, 3, 3 }, { 4, 5, 6, 3 }, { 9, 1, 3, 4 }, { 1, 2, 3, 4 } };
-    Matrix D = new Matrix(d);
-    Matrix Q = D.quarterify(0);
-    // D.show();
-    System.out.println();
-
-    // create a 8x8 matrix with random values
-
-    Matrix A = Matrix.random(4, 4);
-    Matrix B = Matrix.random(4, 4);
-
-    // int partitionSize = 16;
-    int chunkSize = 2;
-
-    Matrix[] matrixAChunks = A.divide(chunkSize);
-    Matrix[] matrixBChunks = B.divide(chunkSize);
-
-    for (int i = 0; i < matrixAChunks.length; i++) {
-      System.out.println("Matrix A Chunk " + i + ": ");
-      matrixAChunks[i].show();
-      System.out.println();
-    }
-    // [1, 2, 3, 4]
-    // [[1, 2]
-    // [3, 4]]
-
-    for (int i = 0; i < matrixBChunks.length; i++) {
-      System.out.println("Matrix B Chunk " + i + ": ");
-      matrixBChunks[i].show();
-      System.out.println();
-    }
-    // [1, 2, 3, 4]
-    // [[1, 2]
-    // [3, 4]]
-
-    // 2x2
-    // [
-    // [first row of A, first col of B],
-    // [first row of A, second col of B],
-    // [second row of A, first col of B],
-    // [second row of A, second col of B]
-    // ]
-    Matrix[][][] matrixChunks = new Matrix[matrixAChunks.length][2][matrixAChunks[0].getM()];
-    Matrix[][][] matrixChunks1 = new Matrix[matrixAChunks.length][2][matrixAChunks[0].getM()];
-
-    Matrix AAA = new Matrix(8, 8);
-    Matrix[] As = {
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-        Matrix.random(2, 2),
-    };
-    AAA.joinAll(As);
-    AAA.show();
-
-    Matrix testPadding = Matrix.random(8, 8);
-    Matrix.padding(testPadding).show("Test padding:");
-
-    // System.out.println(Helper.convertToIndex(0, 0, chunkSize));
-    // System.out.println(Helper.convertToIndex(0, 1, chunkSize));
-
-    // System.out.println(Helper.convertToIndex(0, 0, chunkSize));
-    // System.out.println(Helper.convertToIndex(1, 0, chunkSize));
-
-    // System.out.println(Helper.convertToIndex(0, 0, chunkSize));
-    // System.out.println(Helper.convertToIndex(0, 1, chunkSize));
-
-    // System.out.println(Helper.convertToIndex(0, 1, chunkSize));
-    // System.out.println(Helper.convertToIndex(1, 1, chunkSize));
-
-    // System.out.println(Helper.convertToIndex(1, 0, chunkSize));
-    // System.out.println(Helper.convertToIndex(1, 1, chunkSize));
-
-    // System.out.println(Helper.convertToIndex(0, 0, chunkSize));
-    // System.out.println(Helper.convertToIndex(1, 0, chunkSize));
-
-    // System.out.println(Helper.convertToIndex(1, 0, chunkSize));
-    // System.out.println(Helper.convertToIndex(1, 1, chunkSize));
-
-    // System.out.println(Helper.convertToIndex(1, 1, chunkSize));
-    // System.out.println(Helper.convertToIndex(1, 1, chunkSize));
-
-    /*
-     *
-     * [
-     * ...task for workers,
-     * [
-     * [A0, A1, A2] ...Matrix A (row)
-     * [B0, B2, B3] ...Matrix B (col)
-     * ]
-     * ]
-     *
-     */
-    /*
-     * matrixChunks1[0][0][0] = matrixAChunks[Helper.convertToIndex(0, 0,
-     * chunkSize)];
-     * //dot
-     * matrixChunks1[0][1][0] = matrixBChunks[Helper.convertToIndex(0, 0,
-     * chunkSize)];
-     *
-     * //plus
-     *
-     * matrixChunks1[0][0][1] = matrixAChunks[Helper.convertToIndex(0, 1,
-     * chunkSize)];
-     * //dot
-     * matrixChunks1[0][1][1] = matrixBChunks[Helper.convertToIndex(1, 0,
-     * chunkSize)];
-     *
-     *
-     *
-     *
-     * matrixChunks1[1][0][0] = matrixAChunks[Helper.convertToIndex(0, 0,
-     * chunkSize)];
-     * //dot
-     * matrixChunks1[1][1][0] = matrixBChunks[Helper.convertToIndex(0, 1,
-     * chunkSize)];
-     *
-     * //plus
-     *
-     * matrixChunks1[1][0][1] = matrixAChunks[Helper.convertToIndex(0, 1,
-     * chunkSize)];
-     * //dot
-     * matrixChunks1[1][1][1] = matrixBChunks[Helper.convertToIndex(1, 1,
-     * chunkSize)];
-     *
-     *
-     *
-     *
-     * matrixChunks1[2][0][0] = matrixAChunks[Helper.convertToIndex(1, 0,
-     * chunkSize)];
-     * //dot
-     * matrixChunks1[2][1][0] = matrixBChunks[Helper.convertToIndex(0, 0,
-     * chunkSize)];
-     *
-     * //plus
-     *
-     * matrixChunks1[2][0][1] = matrixAChunks[Helper.convertToIndex(1, 1,
-     * chunkSize)];
-     * //dot
-     * matrixChunks1[2][1][1] = matrixBChunks[Helper.convertToIndex(1, 0,
-     * chunkSize)];
-     *
-     *
-     *
-     *
-     * matrixChunks1[3][0][0] = matrixAChunks[Helper.convertToIndex(1, 0,
-     * chunkSize)];
-     * //dot
-     * matrixChunks1[3][1][0] = matrixBChunks[Helper.convertToIndex(0, 1,
-     * chunkSize)];
-     *
-     * //plus
-     *
-     * matrixChunks1[3][0][1] = matrixAChunks[Helper.convertToIndex(1, 1,
-     * chunkSize)];
-     * //dot
-     * matrixChunks1[3][1][1] = matrixBChunks[Helper.convertToIndex(1, 1,
-     * chunkSize)];
-     */
-
-    // A 4x4
-    // matrixAChunks [2x2, 2x2, 2x2, 2x2]
-    // int numChunks = A.M * A.N / chunkSize^2
-    // int numChunks = matrixAChunks.length;
-    // int len = matrixAChunks[0].getM();
-    /*
-     * For each task you've to send a row of first matrix and a column of second
-     * matrix
-     * Suppose each matrix is 4x4
-     * For example, if you've two matrices with 16 chunks each, then there must be
-     * 16 workers.
-     * Now, for each worker, send a row from first matrix and a column from second
-     * matrix.
-     * Worker 0: MatA.row(0), MatB.col(0)
-     * Worker 1: MatA.row(0), MatB.col(1)
-     * Worker 2: MatA.row(0), MatB.col(2)
-     * Worker 3: MatA.row(0), MatB.col(3)
-     * Worker 4: MatA.row(1), MatB.col(0)
-     * Worker 5: MatA.row(1), MatB.col(1)
-     * Worker 6: MatA.row(1), MatB.col(2)
-     * Worker 7: MatA.row(1), MatB.col(3)
-     */
-    /*
-     * Worker num =: w
-     * w % x (e.g: 5%4 = 1 column of matB)
-     * w / x (e.g: 5/4 = 1 row of matA - integer division)
-     * x == dim(A)or dim(B)
-     *
-     */
-    // for (int w = 0; w < numChunks; w++) {
-    // int x = A.getM();
-    // int columnB = w % x;
-    // int rowA = w / x;
-    // System.out.println(rowA + ", " + columnB);
-    // // for (int j = 0; j < 2; j++) {
-    // for (int k = 0; k < chunkSize; k++) {
-    // System.out.println("Printing matrixChunksA[" + w + "][0][" + k + "]");
-    // System.out.println("Printing matrixChunksB[" + w + "][1][" + k + "]");
-    // // matrixChunks[w][0][k] = matrixChunks[Helper.convertToIndex(rowA, columnB,
-    // chunkSize)];
-    // }
-    // // }
-    // }
-
-    /*
-     * for (int w = 0; w < numChunks; w++) {
-     * int x = A.getM();
-     * int columnB = w % x;
-     * int rowA = w / x;
-     * }
-     */
-    /*
-     * [
-     * Matrix A Chunk 0:
-     * 0.0889 0.7697
-     * 0.5881 0.9030
-     *
-     * Matrix A Chunk 1:
-     * 0.8547 0.3488
-     * 0.7491 0.9750
-     *
-     * Matrix A Chunk 2:
-     * 0.6128 0.2170
-     * 0.6823 0.3417
-     *
-     * Matrix A Chunk 3:
-     * 0.8508 0.1106
-     * 0.0828 0.8620
-     * ]
-     */
-    /*
-     *
-     * int rows = (int) Math.sqrt(matrixAChunks.length); // [1, 2, 3, 4]
-     * int cols = matrixAChunks[0].getM();
-     *
-     * System.out.println("-------------------");
-     * matrixAChunks[Helper.convertToIndex(0, 1, chunkSize)].show();
-     * System.out.println("-------------------");
-     *
-     * // Printing matrixChunksA[0][0]
-     * // Printing matrixChunksB[0][0]
-     * // Printing matrixChunksA[0][1]
-     * // Printing matrixChunksB[1][0]
-     *
-     * // Printing matrixChunksA[0][0]
-     * // Printing matrixChunksB[0][1]
-     * // Printing matrixChunksA[0][1]
-     * // Printing matrixChunksB[1][1]
-     *
-     * // Printing matrixChunksA[1][0]
-     * // Printing matrixChunksB[0][0]
-     * // Printing matrixChunksA[1][1]
-     * // Printing matrixChunksB[1][0]
-     *
-     * // Printing matrixChunksA[1][0]
-     * // Printing matrixChunksB[0][1]
-     * // Printing matrixChunksA[1][1]
-     * // Printing matrixChunksB[1][1]
-     *
-     * for (int k = 0; k < matrixAChunks.length; k++) {
-     * for (int i = 0; i < rows; i++) {
-     * for (int j = 0; j < cols; j++) {
-     * // for (int k = 0; k < cols; k++) {
-     * // matrixChunks[Helper.convertToIndex(i, k, chunkSize)][0][j] =
-     * matrixAChunks[Helper.convertToIndex(i, k, chunkSize)];
-     * // matrixChunks[Helper.convertToIndex(k, j, chunkSize)][1][j] =
-     * matrixBChunks[Helper.convertToIndex(k, j, chunkSize)];
-     *
-     * System.out.println("Printing " + k + " matrixChunksA[" + i + "][" + j + "]");
-     * System.out.println("Printing " + k + " matrixChunksB[" + j + "][" + i + "]");
-     *
-     * // System.out.println(Helper.convertToIndex(j, k, chunkSize) + ", " + j +
-     * ", " + k);
-     * // matrixAChunks[Helper.convertToIndex(j, k, chunkSize)].show();
-     * // System.out.println();
-     * // }
-     * }
-     * System.out.println();
-     * }
-     * }
-     */
-
-    // matrixChunks1[0][0][0].show();
-    // matrixChunks[0][0][0].show();
-
-    // matrixChunks1[0][0][1].show();
-    // matrixChunks[0][0][1].show();
-
-    ////////////////////////////////////////////////
-    // Assuming A and B are 8*8
-    // int CHUNK_SIZE = 8;
-    // int elements_in_chunk = CHUNK_SIZE*CHUNK_SIZE;
-    // int NUM_WORKERS = (16*16) / (elements_in_chunk); //8*8 = num elements in each
-    //////////////////////////////////////////////// matrix
-    // int GAME_CHANGER = (int) Math.sqrt(NUM_WORKERS);
-
-    // System.out.println("<--------------------FOCUS HERE--------------->");
-
-    // for (int i = 0; i < NUM_WORKERS; i++) {
-    // System.out.println("Worker# " + i);
-    // int startA = (i / GAME_CHANGER) * GAME_CHANGER;
-    // int endA = startA + GAME_CHANGER;
-    // System.out.println("We will feed these chunk numbers of A to this worker:");
-    // for (int x = startA; x < endA; x++) {
-    // System.out.print(x + " ");
-    // }
-    // System.out.println();
-    // System.out.println("We will feed these chunk numbers of B to this worker:");
-    // int startB = (i % GAME_CHANGER);
-    // int numElementsInB = 0;
-    // for (int x = startB;; x += GAME_CHANGER) {
-    // System.out.print(x + " ");
-    // numElementsInB++;
-    // if (numElementsInB == GAME_CHANGER) {
-    // break;
-    // }
-    // }
-    // System.out.println();
-
-    // }
-    // System.out.println("<--------------------FOCUS HERE--------------->");
-
-    // Matrix[][][] my = arrangeTasks(matrixAChunks, matrixBChunks, A.getM());
-    // my[0][0][0].show();
-    // System.out.println("-------------------");
-    // my[0][0][1].show();
-    // System.out.println("-------------------");
-    // my[0][1][0].show();
-    // System.out.println("-------------------");
-    // my[0][1][1].show();
-    // System.out.println("-------------------");
-
-    ///////////////////////////////////////////////
-
-    // matrixChunks1[0][0][1].show();
-    // matrixChunks[0][0][1].show();
-
-    // Dot product store in list of matrixAChunks and matrixBChunks
-    Matrix[] matrixDotProduct = new Matrix[matrixAChunks.length];
-
-    // System.out.println("Quarter 1");
-    // Q.show();
-    // System.out.println("-----------------\n");
-
-    // Q = D.quarterify(1);
-    // System.out.println("Quarter 2");
-    // Q.show();
-    // System.out.println("-----------------\n");
-
-    // Q = D.quarterify(2);
-    // System.out.println("Quarter 3");
-    // Q.show();
-    // System.out.println("-----------------\n");
-
-    // Q = D.quarterify(3);
-    // System.out.println("Quarter 4");
-    // Q.show();
-    // System.out.println("-----------------\n");
-
-    // Matrix d_square = Matrix.strassen(D, D);
-    // d_square.show();
-    // System.out.println();
-    // ------------------------
-
-    // double[][] e = { { 1, 2, 3 }, { 4, 5, 6 }, { 9, 1, 3 } };
-    // Matrix E = new Matrix(e);
-    // Matrix newMat = E.fillZeros()
-
-    // Matrix A = Matrix.random(5, 5);
-    // A.show();
-    // System.out.println();
-
-    // A.swap(1, 2);
-    // A.show();
-    // System.out.println();
-
-    // Matrix B = A.transpose();
-    // B.show();
-    // System.out.println();
-
-    // Matrix C = Matrix.identity(5);
-    // C.show();
-    // System.out.println();
-
-    // A.plus(B).show();
-    // System.out.println();
-
-    // B.times(A).show();
-    // System.out.println();
-
-    // // shouldn't be equal since AB != BA in general
-    // System.out.println(A.times(B).eq(B.times(A)));
-    // System.out.println();
-
-    // Matrix b = Matrix.random(5, 1);
-    // b.show();
-    // System.out.println();
-
-    // Matrix x = A.solve(b);
-    // x.show();
-    // System.out.println();
-
-    // A.times(x).show();
-
   }
 }

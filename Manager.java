@@ -11,22 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-// servers
-// localhost:8080
-// localhost:8081
-
-// chunks
-// Job 1 [0, 1, 2, 3, 4]
-// Job 2 [5, 6, 7, 8, 9]
-// Job 3 [10, 11, 12, 13, 14]
-// Job 4 [15, 16, 17, 18, 19]
-
-// Create jobs from chunks (jobs = chunks)
-
-// Enqueue all jobs
-// Get list of all free server for example if two are free then send job to both (dequeue and execute)
-
-// Private attribute host and port
+/**
+ * The Manager class is responsible for managing the workers and the client. It receives the matrices
+ * from the client, divides the matrices into chunks, and sends the chunks to the workers. It also
+ * receives the results from the workers and merges them into a single matrix.
+ */
 public class Manager {
   // Server socket for accepting client connections
   private ServerSocket serverSocket;
@@ -45,7 +34,6 @@ public class Manager {
 
   private int partitionSize;
 
-  // Add to workerAddresses
   /**
    * Add a worker to the list of workers
    *
@@ -56,7 +44,6 @@ public class Manager {
     workerAddresses[workerAddresses.length - 1] = workerAddress;
   }
 
-  // Manager constructor
   // The constructor takes a partition size and throws an exception if it's not a
   // power of 4.
   public Manager(int partitionSize) {
@@ -68,7 +55,6 @@ public class Manager {
     this.partitionSize = partitionSize;
   }
 
-  // The above code is creating a new Manager object.
   public Manager() {
     this.partitionSize = 4;
   }
@@ -95,8 +81,6 @@ public class Manager {
     return isConnected;
   }
 
-  // The ManagerClientHandler class is a thread that handles a client
-  // connection. It creates a new thread for each client connection.
   /**
    * Start a server socket and wait for a connection.
    *
@@ -148,9 +132,6 @@ public class Manager {
     }
   }
 
-  // We create a socket to the worker, send the chunk to the worker, receive the
-  // result from the
-  // worker, and close the socket.
   /**
    * This is our manager job handler.
    * 1. Send a input to the worker
@@ -193,31 +174,6 @@ public class Manager {
   }
 
   /**
-   * The following method arrangeTasks takes chunks of both matrices A and B,
-   * and the dimension of any of the matrix (since both are equal). Then it
-   * creates
-   * number of workers by dividing number of elements in a matrix with number of
-   * elements in each chunk. Then for each worker, it takes all the chunks from a
-   * specific row of A and from a specific column of B. Those specific column and
-   * row are selected based on the ordering of workers as follows:
-   * [
-   * worker#1, worker#2, worker#3, worker#4,
-   * worker#5, worker#6, worker#7, worker#8,
-   * worker#9, worker#10, worker#11, worker#12,
-   * worker#13, worker#14, worker#15, worker16,
-   * ]
-   * So, the row from A must be the row number in which the specific worker number
-   * lies
-   * and the column from B must be column number in which the specific worker
-   * number
-   * lies.
-   *
-   * After selecting chunks from A and B, the function stores them in an array for
-   * each worker. It stores all such arrays, representing the task the workers, in
-   * an
-   * array with the length equal to the number of workers.
-   */
-  /**
    * Given a set of chunks of A and B, and the dimension of the matrix,
    * this function will return a set of chunks of A and B that will be fed to each
    * worker
@@ -244,19 +200,15 @@ public class Manager {
     Matrix[][][] resultMatrices = new Matrix[numWorkers][2][gameChanger];
 
     for (int i = 0; i < numWorkers; i++) {
-      // System.out.println("Worker# " + i);
       int startA = (i / gameChanger) * gameChanger;
       int endA = startA + gameChanger;
-      // System.out.println("We will feed these chunk numbers of A to this worker:");
+
       Matrix[] aChunksToWorker = new Matrix[gameChanger];
 
       int aChunkCounter = 0;
       for (int x = startA; x < endA; x++) {
-        // System.out.print(x + " ");
         aChunksToWorker[aChunkCounter++] = aChunks[x];
       }
-      // System.out.println();
-      // System.out.println("We will feed these chunk numbers of B to this worker:");
       int startB = (i % gameChanger);
       int numElementsInB = 0;
 
@@ -264,7 +216,6 @@ public class Manager {
 
       int bChunkCounter = 0;
       for (int x = startB;; x += gameChanger) {
-        // System.out.print(x + " ");
         bChunksToWorker[bChunkCounter++] = bChunks[x];
 
         numElementsInB++;
@@ -274,27 +225,27 @@ public class Manager {
       }
       Matrix[][] temp = { aChunksToWorker, bChunksToWorker };
       resultMatrices[i] = temp;
-
-      // System.out.println();
     }
 
     return resultMatrices;
   }
 
+/**
+ * We divide the matrices into chunks, send the chunks to the servers, and merge the results from the
+ * servers
+ */
   private class ManagerClientHandler extends Thread {
     private Socket clientSocket;
     private ObjectOutputStream outputStream;
     private ObjectInputStream inputStream;
 
-    // Creating a new ManagerClientHandler object and passing the clientSocket to
-    // it.
+    // Creating a new ManagerClientHandler object and passing the clientSocket to it.
     public ManagerClientHandler(Socket clientSocket) {
       this.clientSocket = clientSocket;
     }
 
     // We divide the matrices into chunks, send the chunks to the servers, and merge
-    // the results from
-    // the servers.
+    // the results from the servers.
     public void run() {
       try {
         outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
@@ -315,16 +266,6 @@ public class Manager {
         // Divide the integers array into chunks of size n
         int chunkSize = (int) Math.sqrt(Math.pow(matrixA.getM(), 2) / partitionSize);
 
-        // MatrixAChunks[
-        // Matrix[
-        // 1 2 <- ChunkSize = 2
-        // 3 4
-        // ],
-        // Matrix[
-        // 5 6
-        // 7 8
-        // ]
-        // ]
         Matrix[] matrixAChunks = matrixA.divide(chunkSize);
         Matrix[] matrixBChunks = matrixB.divide(chunkSize);
 
@@ -336,12 +277,6 @@ public class Manager {
         // We will keep track of our threads so later we can pause execution
         // to wait for all threads to finish
         List<Thread> threads = new ArrayList<>();
-
-        // Example
-        // Iterate over the chunks (4 chunks)
-        // Get the free servers (2 free servers)
-        // Create a new thread for each chunk depending on the free servers
-        // - 2 chunks will be sent to 2 servers
 
         // send the chunks to servers clients in threads
         try {
@@ -403,8 +338,6 @@ public class Manager {
                   LOGGER.info("Freeing worker: " + Helper.inetSocketAddressToString(workerAddress));
                   workerStatus.put(Helper.inetSocketAddressToString(workerAddress), false);
 
-                  // Print hashmap workerStatus
-                  // LOGGER.info("workerStatus: " + workerStatus.toString());
                 } catch (IOException e) {
                   e.printStackTrace();
                 } catch (ClassNotFoundException e) {
@@ -414,7 +347,7 @@ public class Manager {
               threads.add(thread);
               thread.start();
 
-              chunkIndex++; // 4th chunk
+              chunkIndex++;
 
             }
 
@@ -467,16 +400,6 @@ public class Manager {
     Manager manager = new Manager((int) Math.pow(4, 1));
     manager.addWorker(new InetSocketAddress("localhost", 9001));
     manager.addWorker(new InetSocketAddress("localhost", 9002));
-    // manager.addWorker(new InetSocketAddress("8.tcp.ngrok.io", 16500));
-    // manager.addWorker(new InetSocketAddress("59.103.212.155", 80));
-
-    // if (manager.checkWorkersConnection()) {
-    // LOGGER.info("All workers are connected");
-    // } else {
-    // LOGGER.severe("Not all workers are connected");
-    // LOGGER.severe("Exiting...");
-    // return;
-    // }
 
     manager.start(6666);
   }

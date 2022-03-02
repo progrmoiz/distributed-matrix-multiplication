@@ -7,8 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-// make a worker class multi-threaded
-
+/**
+ * It creates a server socket and waits for a connection. It accepts a client connection and creates a
+ * new thread for it. The thread will handle the client separately. It is a multi client because this
+ * accept multiple request from multiple client
+ */
 public class Worker {
   // Server socket for accepting client connections
   private ServerSocket serverSocket;
@@ -81,12 +84,7 @@ public class Worker {
       private Matrix result;
       private int row;
 
-      // The RowMultiply class is a subclass of Thread.
-      // It has three instance variables: result, mat1, and mat2.
-      // It has one constructor that takes four parameters: result, mat1, mat2, and
-      // row.
-      // The constructor initializes the three instance variables to the values of the
-      // four parameters.
+     // Initializing the variables.
       public RowMultiply(Matrix result, Matrix mat1, Matrix mat2, int row) {
         this.result = result;
         this.mat1 = mat1;
@@ -117,8 +115,7 @@ public class Worker {
       private int bigThreshold;
 
       // The constructor takes in the final result matrix, the two matrices that will
-      // be multiplied,
-      // and a threshold value.
+      // be multiplied, and a threshold value.
       public DotProduct(Matrix finalResult, Matrix mat1, Matrix mat2) {
         this.finalResult = finalResult;
         this.mat1 = mat1;
@@ -129,34 +126,16 @@ public class Worker {
       }
 
       // The `RowMultiply` class is a thread that multiplies a row of `mat1` by a row
-      // of `mat2` and adds
-      // it to `finalResult`.
-      //
+      // of `mat2` and adds it to `finalResult`.
       // The `run` method of the `RowMultiply` class creates a new thread and starts
       // it.
-      //
       // The `run` method also adds the thread to a list of threads.
-      //
       // The `run` method checks if the number of threads is greater than 50.
-      //
       // If it is, it waits for the threads to finish.
       @Override
       public void run() {
         List<Thread> threads = new ArrayList<>();
         Matrix temp = new Matrix(mat1.getM(), mat1.getN());
-
-        // this.result.set(i, j, value);
-        // multiply mat1 by mat2 and add it to finalResult
-        // System.out.println("Inside thread run and multipying:");
-        // this.mat1.show();
-        // this.mat2.show();
-        // if mat1 size is actually BIG, then don't multiply traditionally - make some
-        // genius move
-        // A genius move could be: making more chunks out of them and recursively
-        // if (mat1.getM() > bigThreshold) {
-        // Chunking
-        // Matrix[] matrixAChunks = mat1.divide(Math.pow(4, ));
-        // Matrix[] matrixBChunks = mat2.divide(chunkSize);
 
         int rows = mat1.getM();
 
@@ -166,15 +145,11 @@ public class Worker {
           thread.start();
           threads.add(thread);
           if (threads.size() % 50 == 0) {
-            // if (threads.size() > rows*0.25) { //Wait if 25% rows are already in process
             Helper.waitForThreads(threads);
           }
         }
         Helper.waitForThreads(threads);
         finalResult.plusInPlace(temp);
-        // } else {
-        // finalResult.plusInPlace(mat1.times(mat2));
-        // }
       }
     }
 
@@ -206,23 +181,6 @@ public class Worker {
       }
     }
 
-    // Non-recursive conventional matrix multiplication
-    // public Matrix multiply1(Matrix[] matrixAChunks, Matrix[] matrixBChunks) {
-    // int n = matrixAChunks[0].getM();
-    // // int C[][] = new int[n][n];
-    // // create a new matrix C
-    // Matrix result = new Matrix(n, n);
-
-    // // implement the conventional matrix multiplication
-    // if (n < 512) {
-    // result = Matrix.dot(matrixAChunks, matrixBChunks);
-    // } else {
-    // ThreadCreation.multiply(matrixAChunks, matrixBChunks, result);
-    // }
-    // return result;
-
-    // }
-
     public void run() {
       try {
         outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
@@ -236,12 +194,10 @@ public class Worker {
 
         LOGGER.info("Starting computation...");
 
-        // Matrix result = new Matrix(A[0].getM(), A[0].getN());
-
         Matrix result = new Matrix(matrixAChunks[0].getM(), matrixAChunks[0].getN());
         int rowsInChunk = matrixAChunks[0].getM();
 
-        if (rowsInChunk < 2) { // Let's check if we have 30 chunks in each row and in each column
+        if (rowsInChunk < 2) {
           LOGGER.info("Calling matrix multiplication without threads. Give a bigger challenge to use threads. :p");
           // Doing matrix multiplication.
           result = Matrix.dot(matrixAChunks, matrixBChunks);
@@ -263,7 +219,7 @@ public class Worker {
         LOGGER.info("Connection failed" + e.getMessage());
         e.printStackTrace();
       } catch (ClassNotFoundException e) {
-        // e.printStackTrace();
+        e.printStackTrace();
       }
     }
   }

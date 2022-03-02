@@ -4,6 +4,10 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.logging.Logger;
 
+/**
+ * It connects to the manager and sends the data to the manager and receives the
+ * result from the manager.
+ */
 public class MainClient {
   private Socket clientSocket;
   private ObjectOutputStream outputStream;
@@ -20,7 +24,8 @@ public class MainClient {
    */
   public void startConnection(String ip, int port) throws IOException {
     clientSocket = new Socket(ip, port);
-    LOGGER.info("Connected to " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
+    // LOGGER.info("Connected to " + clientSocket.getInetAddress() + ":" +
+    // clientSocket.getPort());
 
     outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
     inputStream = new ObjectInputStream(clientSocket.getInputStream());
@@ -83,49 +88,49 @@ public class MainClient {
   }
 
   public static void main(String[] args) {
-    Matrix matrixA = Matrix.random(100, 100);
-    Matrix matrixB = Matrix.random(100, 100);
 
-    for (int i = 0; i < 100; i++) {
-      for (int j = 0; j < 100; j++) {
-        matrixA.set(i, j, 5);
-        matrixB.set(i, j, 5);
+    // Testing time for these matrices
+    // int[] matrixDimensions = { 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
+    int[] matrixDimensions = { 16, 32};
+
+    for (int d = 0; d < matrixDimensions.length; d++) {
+
+      // long startTime = System.currentTimeMillis(); // for measuring time
+      int dim = matrixDimensions[d];
+
+      // Create the random matrices
+      Matrix matrixA = Matrix.random(dim, dim);
+      Matrix matrixB = Matrix.random(dim, dim);
+
+      Matrix[] matrices = { matrixA, matrixB };
+
+      try {
+        MainClient mainClient = new MainClient();
+        mainClient.startConnection("localhost", 6666);
+        LOGGER.info("Sending following " + dim + "x" + dim + " matrices to manager...");
+        matrixA.show("A");
+        matrixB.show("B");
+        mainClient.sendData(matrices);
+
+        // receive data
+        Matrix receivedData = mainClient.receiveData();
+        LOGGER.info("Received final output from manager.");
+        receivedData.show("A x B");
+
+        mainClient.stopConnection();
+      } catch (IOException e) {
+        LOGGER.severe("Connection failed");
+        LOGGER.severe("Exiting...");
       }
-    }
 
-    Matrix[] matrices = { matrixA, matrixB };
+      // long endTime = System.currentTimeMillis();
+      // long duration = endTime - startTime;
 
-    // Get host and port from command line
-    // String ip = args[0];
-    // int port = Integer.parseInt(args[1]);
+      // duration in seconds
+      // double durationInSeconds = duration / 1000.0;
 
-    // if (args.length != 2) {
-    // System.out.println("Usage: java MainClient <host> <port>");
-    // System.exit(1);
-    // }
-
-    // if (port == 0) {
-    // System.out.println("Usage: java MainClient <host> <port>");
-    // System.exit(1);
-    // }
-
-    try {
-      MainClient mainClient = new MainClient();
-      mainClient.startConnection("localhost", 6666);
-      LOGGER.info("Sending following matrices to manager...");
-      // matrixA.show("A");
-      // matrixB.show("B");
-      mainClient.sendData(matrices);
-
-      // receive data
-      Matrix receivedData = mainClient.receiveData();
-      LOGGER.info("Received final output from manager.");
-      receivedData.show("A x B");
-
-      mainClient.stopConnection();
-    } catch (IOException e) {
-      LOGGER.severe("Connection failed");
-      LOGGER.severe("Exiting...");
+      // print "Time taken for n = dim is
+      // System.out.println("Time taken for " + dim + "x" + dim + " matrix is " + durationInSeconds + " seconds");
     }
   }
 }
